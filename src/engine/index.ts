@@ -51,3 +51,18 @@ export {
   expectedScoreAfterReroll,
   evForAllCategories,
 } from './conditional'
+
+// Game state encoding
+export {
+  encodeGameState,
+  decodeGameState,
+  isCategoryFilled,
+  markCategoryFilled,
+  isGameOver,
+  filledCategoryCount,
+  remainingTurns,
+  type GameStateKey,
+} from './game-state'
+
+// Oracle (precomputed DP values)
+export { initOracle, getOptimalExpectedScore, type Oracle } from './oracle'
