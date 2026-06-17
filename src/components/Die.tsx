@@ -6,8 +6,7 @@ interface DieProps {
   value: number // 1..6 (clamped); typed loose so call sites can pass engine output
   size?: number // px, default 64
   held?: boolean // default false
-  rolling?: boolean // default false (drives the shake animation)
-  settling?: boolean // default false (drives the settle animation)
+  throwing?: boolean // default false (drives the throw animation)
   onClick?: () => void
   className?: string
 }
@@ -38,57 +37,59 @@ export function Die({
   value,
   size = 64,
   held = false,
-  rolling = false,
-  settling = false,
+  throwing = false,
   onClick,
   className = '',
 }: DieProps) {
   const safeValue = (Math.max(1, Math.min(6, value)) as DieValue)
   const pips = FACE_PIPS[safeValue]
 
-  const stateClass = rolling ? 'die--rolling' : settling ? 'die--settle' : ''
+  const throwClass = throwing ? 'die--throwing' : ''
   const heldClass = held ? 'die--held' : ''
   const clickableClass = onClick ? 'die--clickable' : ''
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      className={`die ${stateClass} ${heldClass} ${clickableClass} ${className}`}
-      onClick={onClick}
-      role="img"
-      aria-label={`Die showing ${safeValue}`}
-    >
-      {/* Held outline: a rounded-rect 3px outside the body in the accent color */}
-      {held && (
+    <span className="die-wrap" style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        className={`die ${throwClass} ${heldClass} ${clickableClass} ${className}`}
+        onClick={onClick}
+        role="img"
+        aria-label={`Die showing ${safeValue}`}
+      >
+        {/* Held outline: a rounded-rect 3px outside the body in the accent color */}
+        {held && (
+          <rect
+            x={3}
+            y={3}
+            width={94}
+            height={94}
+            rx={21}
+            className="die-held-outline"
+            fill="none"
+          />
+        )}
+
+        {/* Body */}
         <rect
-          x={3}
-          y={3}
-          width={94}
-          height={94}
-          rx={21}
-          className="die-held-outline"
-          fill="none"
+          x={6}
+          y={6}
+          width={88}
+          height={88}
+          rx={18}
+          className="die-face"
+          strokeWidth={2}
         />
-      )}
 
-      {/* Body */}
-      <rect
-        x={6}
-        y={6}
-        width={88}
-        height={88}
-        rx={18}
-        className="die-face"
-        strokeWidth={2}
-      />
-
-      {/* Pips */}
-      {pips.map((key) => {
-        const { cx, cy } = PIP[key]
-        return <circle key={key} cx={cx} cy={cy} r={8} className="die-pip" />
-      })}
-    </svg>
+        {/* Pips */}
+        {pips.map((key) => {
+          const { cx, cy } = PIP[key]
+          return <circle key={key} cx={cx} cy={cy} r={8} className="die-pip" />
+        })}
+      </svg>
+      <span className="die-shadow" />
+    </span>
   )
 }

@@ -1,24 +1,15 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import { Die, RollButton, useDieRoll, FACE_COLORS } from '@/components'
 import './OneDieModel.css'
 
 /* ----------------------------------------------------------------------------
- * Scene 1 — One die. This model is the TEMPLATE every other scene copies:
- *   - all visible tools are a pure function of the active step (reversible)
- *   - the model carries NO narrative prose (only labels/axes/buttons)
- *   - the histogram starts empty and builds from the reader's own rolls
+ * Scene 1 — One die, reauthored into THREE beats (Part 2 §C).
+ * The model is the gate: each beat's payoff is locked until its interaction
+ * happens. No narrative prose lives in the panel — only the die, button,
+ * histogram with axis labels, slider, choice buttons, and one microcopy cue.
  * ------------------------------------------------------------------------- */
 
-function toolsFor(stepId: string | null) {
-  return {
-    showSlider: stepId === 's1-4' || stepId === 's1-5',
-    showOneSixthLine: stepId === 's1-5',
-    showPrediction: stepId === 's1-6' || stepId === 's1-7',
-  }
-}
-
-// Box–Muller standard normal.
 function randn(): number {
   let u = 0
   let v = 0
@@ -28,24 +19,18 @@ function randn(): number {
 }
 
 // Counts for N draws of a fair die via the normal approximation to
-// Binomial(N, 1/6): mean N/6, sd sqrt(N·(1/6)·(5/6)). Fluctuations grow like
-// √N, so the *relative* spread shrinks as N grows — the LLN flattening.
+// Binomial(N, 1/6): relative spread shrinks like 1/√N — the LLN flattening.
 function lawOfLargeNumbersCounts(n: number): number[] {
   const p = 1 / 6
   const mean = n * p
   const sd = Math.sqrt(n * p * (1 - p))
-  const counts = [0, 0, 0, 0, 0, 0]
-  for (let i = 0; i < 6; i++) {
-    counts[i] = Math.max(0, Math.round(mean + randn() * sd))
-  }
-  return counts
+  return Array.from({ length: 6 }, () => Math.max(0, Math.round(mean + randn() * sd)))
 }
 
-// Slider position 0..1000 → N on a log scale 10 → 100000.
 const sliderToN = (t: number) => Math.round(10 ** (1 + (t / 1000) * 4))
 
 interface FaceHistogramProps {
-  counts: number[] // index 0..5 → faces 1..6
+  counts: number[]
   showOneSixthLine: boolean
 }
 
@@ -56,8 +41,6 @@ function FaceHistogram({ counts, showOneSixthLine }: FaceHistogramProps) {
   const maxCount = Math.max(1, ...counts)
   const barWidth = 36
   const slot = 300 / 6
-
-  // y for the 1/6 reference: the count that equals total/6.
   const oneSixthCount = total / 6
   const lineY = baseline - (oneSixthCount / maxCount) * maxBarHeight
 
@@ -91,15 +74,8 @@ function FaceHistogram({ counts, showOneSixthLine }: FaceHistogramProps) {
         )
       })}
 
-      {/* 1/6 reference line (fades in only at S1.5) */}
       {showOneSixthLine && total > 0 && (
-        <line
-          className="hist-onesixth"
-          x1={0}
-          x2={300}
-          y1={lineY}
-          y2={lineY}
-        />
+        <line className="hist-onesixth" x1={0} x2={300} y1={lineY} y2={lineY} />
       )}
 
       <text className="hist-y-label" x={4} y={12}>
@@ -109,34 +85,43 @@ function FaceHistogram({ counts, showOneSixthLine }: FaceHistogramProps) {
   )
 }
 
-export function OneDieModel({ activeStepId }: SceneModelProps) {
+export function OneDieModel({ activeStepId, satisfyGate }: SceneModelProps) {
   const [rolls, setRolls] = useState<number[]>([])
   const [sliderT, setSliderT] = useState(0)
   const [predictionRoll, setPredictionRoll] = useState<number | null>(null)
 
   const die = useDieRoll(1)
 
-  const { showSlider, showOneSixthLine, showPrediction } = toolsFor(activeStepId)
+  const beat = activeStepId // 'B1.1' | 'B1.2' | 'B1.3'
+  const isRollBeat = beat === 'B1.1'
+  const isSliderBeat = beat === 'B1.2'
+  const isPredictBeat = beat === 'B1.3'
 
   const rollsCapped = rolls.length >= 10
 
   const handleRoll = () => {
-    if (rollsCapped) return
+    if (rollsCapped || die.throwing) return
     const result = Math.floor(Math.random() * 6) + 1 // honest
     die.start(result)
-    setRolls((r) => [...r, result])
+    const next = [...rolls, result]
+    setRolls(next)
+    if (next.length >= 6) satisfyGate?.() // gate: roll ≥ 6
+  }
+
+  const handleSlider = (t: number) => {
+    setSliderT(t)
+    if (sliderToN(t) > 1000) satisfyGate?.() // gate: dragged past ~1000
   }
 
   const handlePredict = () => {
     const result = Math.floor(Math.random() * 6) + 1 // honest, never faked
     die.start(result)
     setPredictionRoll(result)
+    satisfyGate?.() // gate: a choice made
   }
 
-  // Counts feeding the histogram: synthetic LLN distribution while the slider
-  // is active, otherwise the reader's real rolls.
   const sliderN = sliderToN(sliderT)
-  const counts = showSlider
+  const counts = isSliderBeat
     ? lawOfLargeNumbersCounts(sliderN)
     : (() => {
         const c = [0, 0, 0, 0, 0, 0]
@@ -144,18 +129,18 @@ export function OneDieModel({ activeStepId }: SceneModelProps) {
         return c
       })()
 
-  // What face the die shows.
+  // Die face: streak rests on six during the prediction beat until the honest roll.
   let dieValue = die.displayValue
-  if (showPrediction) {
-    dieValue = predictionRoll ?? 6 // staged streak rests on a six until predicted
-  } else if (!die.rolling && !die.settling) {
+  if (isPredictBeat && !die.throwing) {
+    dieValue = predictionRoll ?? 6
+  } else if (!die.throwing && !isSliderBeat) {
     dieValue = rolls.length > 0 ? rolls[rolls.length - 1] : 1
   }
 
   return (
     <div className="one-die-model">
-      {/* Staged six-streak strip (shown only during the prediction beat) */}
-      {showPrediction && (
+      {/* Staged six-streak strip (prediction beat) */}
+      {isPredictBeat && (
         <div className="streak-strip" aria-label="A run of sixes">
           {[0, 1, 2, 3, 4].map((i) => (
             <Die key={i} value={6} size={28} />
@@ -165,34 +150,31 @@ export function OneDieModel({ activeStepId }: SceneModelProps) {
       )}
 
       <div className="die-display">
-        <Die
-          value={dieValue}
-          size={80}
-          rolling={die.rolling}
-          settling={die.settling}
-        />
+        <Die value={dieValue} size={80} throwing={die.throwing} />
       </div>
 
-      {/* Base affordance: Roll (hidden while the slider is the focus) */}
-      {!showSlider && !showPrediction && (
+      {/* Base affordance: Roll (B1.1 only) */}
+      {isRollBeat && (
         <div className="roll-section">
           <p className="rolls-text">{rolls.length} / 10</p>
           <RollButton
             onRoll={handleRoll}
             label="Roll"
-            disabled={rollsCapped || die.rolling}
-            pulsing={rolls.length === 0}
+            disabled={rollsCapped || die.throwing}
+            pulsing={rolls.length < 6}
           />
         </div>
       )}
 
-      {/* Histogram: empty until the first roll, grows per roll */}
-      <div className="histogram-wrap">
-        <FaceHistogram counts={counts} showOneSixthLine={showOneSixthLine} />
-      </div>
+      {/* Histogram (B1.1 and B1.2) */}
+      {(isRollBeat || isSliderBeat) && (
+        <div className="histogram-wrap">
+          <FaceHistogram counts={counts} showOneSixthLine={isSliderBeat && sliderN > 300} />
+        </div>
+      )}
 
-      {/* Slider (S1.4 / S1.5) */}
-      {showSlider && (
+      {/* Slider (B1.2) */}
+      {isSliderBeat && (
         <div className="slider-control">
           <label htmlFor="lln-slider">rolls: {sliderN.toLocaleString()}</label>
           <input
@@ -201,14 +183,14 @@ export function OneDieModel({ activeStepId }: SceneModelProps) {
             min={0}
             max={1000}
             value={sliderT}
-            onChange={(e) => setSliderT(parseInt(e.target.value, 10))}
+            onChange={(e) => handleSlider(parseInt(e.target.value, 10))}
             className="slider"
           />
         </div>
       )}
 
-      {/* Prediction (S1.6 / S1.7) */}
-      {showPrediction && (
+      {/* Prediction (B1.3) */}
+      {isPredictBeat && (
         <div className="prediction-control">
           {predictionRoll === null ? (
             <div className="predict-buttons">
@@ -225,58 +207,33 @@ export function OneDieModel({ activeStepId }: SceneModelProps) {
   )
 }
 
-export const scene1 = {
+export const scene1: Scene = {
   id: 'scene-1',
   model: OneDieModel,
-  steps: [
+  beats: [
     {
-      id: 's1-1',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'die' },
-      text: 'Here it is. Press, and it lands on one of its faces. You have ten rolls; spend them however you like.',
+      id: 'B1.1',
+      scene: 'scene-1',
+      prompt: "Press it. You've got ten rolls.",
+      payoff:
+        'Six faces, each can land — that\'s the whole sample space, $\\Omega=\\{1,2,3,4,5,6\\}$. But your bars came out uneven.',
+      gate: { kind: 'roll', needed: 6 },
     },
     {
-      id: 's1-2',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'What can come up, you already see: one of six faces, no more, no less. That\'s everything that can possibly happen — the sample space: $\\Omega=\\{1,2,3,4,5,6\\}$.',
+      id: 'B1.2',
+      scene: 'scene-1',
+      prompt: 'Crooked die, or too few rolls? Drag it up.',
+      payoff:
+        'They flatten toward one-sixth. The frequency converges to the probability: $f_i=n_i/N\\to P$ — the law of large numbers.',
+      gate: { kind: 'slider' },
     },
     {
-      id: 's1-3',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'But those ten rolls came out uneven — one face got three, another got none. Is the die crooked? Or are ten rolls just too few to tell?',
-    },
-    {
-      id: 's1-4',
-      copyType: 'инструкция' as const,
-      register: 'driven' as const,
-      text: 'Let\'s check. Drag the slider — make it not ten rolls but a thousand. Then a hundred thousand.',
-    },
-    {
-      id: 's1-5',
-      copyType: 'формула' as const,
-      register: 'free' as const,
-      text: 'The more rolls, the flatter the bars: each face\'s frequency settles toward one-sixth and stays there. That settling point is the probability — the number a frequency converges to. $f_i = n_i/N \\to P$. This is the law of large numbers.',
-    },
-    {
-      id: 's1-6',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Now watch. Six sixes in a row — rare, but it happens. What do you think the seventh will be?',
-    },
-    {
-      id: 's1-7',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'Whatever lands — the die doesn\'t care. It doesn\'t remember the six rolls before; the seventh starts from a blank slate. The rolls are independent: $P(A\\cap B)=P(A)\\,P(B)$. (Remember your second guess? There\'s your answer.)',
-    },
-    {
-      id: 's1-8',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'We\'ve taken one die down to the bottom. What changes with two?',
+      id: 'B1.3',
+      scene: 'scene-1',
+      prompt: 'Six sixes in a row. What comes next?',
+      payoff:
+        'The die has no memory — the next roll starts from nothing. Rolls are independent: $P(A\\cap B)=P(A)P(B)$. (Remember your second guess?)',
+      gate: { kind: 'choice' },
     },
   ],
 }

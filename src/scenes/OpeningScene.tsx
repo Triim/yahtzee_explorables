@@ -1,27 +1,25 @@
-import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
-import { Die, RollButton } from '@/components'
+import { Die, RollButton, useDieRoll } from '@/components'
 import './HeroModel.css'
 
 export function HeroModel(_props: SceneModelProps) {
-  const [dieValue, setDieValue] = useState(1)
-  const [isRolling, setIsRolling] = useState(false)
+  const die = useDieRoll(1)
 
   const handleRoll = () => {
-    setIsRolling(true)
-    const newValue = Math.floor(Math.random() * 6) + 1
-    setTimeout(() => {
-      setDieValue(newValue)
-      setIsRolling(false)
-    }, 600)
+    die.start(Math.floor(Math.random() * 6) + 1) // honest
   }
 
   return (
     <div className="hero-model">
       <div className="hero-die-container">
-        <Die value={dieValue} size={120} rolling={isRolling} />
+        <Die value={die.displayValue} size={120} throwing={die.throwing} />
       </div>
-      <RollButton onRoll={handleRoll} label="Roll" pulsing={dieValue === 1} disabled={isRolling} />
+      <RollButton
+        onRoll={handleRoll}
+        label="Roll"
+        pulsing={!die.throwing}
+        disabled={die.throwing}
+      />
     </div>
   )
 }

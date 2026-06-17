@@ -1,21 +1,21 @@
 import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
-import { Die, RollButton, Histogram } from '@/components'
+import { Die, RollButton, Histogram, useDieRoll } from '@/components'
 import './TwoDiceModel.css'
 
 export function TwoDiceModel({ activeStepId }: SceneModelProps) {
   const [rolls, setRolls] = useState<Array<[number, number]>>([])
-  const [isRolling, setIsRolling] = useState(false)
   const [selectedSum, setSelectedSum] = useState<number | null>(null)
+  const dieA = useDieRoll(1)
+  const dieB = useDieRoll(1)
+  const throwing = dieA.throwing || dieB.throwing
 
   const handleRoll = () => {
-    setIsRolling(true)
-    const d1 = Math.floor(Math.random() * 6) + 1
-    const d2 = Math.floor(Math.random() * 6) + 1
-    setTimeout(() => {
-      setRolls([...rolls, [d1, d2]])
-      setIsRolling(false)
-    }, 600)
+    const d1 = Math.floor(Math.random() * 6) + 1 // honest
+    const d2 = Math.floor(Math.random() * 6) + 1 // honest
+    dieA.start(d1)
+    window.setTimeout(() => dieB.start(d2), 70) // stagger
+    setRolls([...rolls, [d1, d2]])
   }
 
   // Empirical histogram (from real rolls)
@@ -49,11 +49,11 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
       <div className="dice-display">
         {rolls.length > 0 ? (
           <>
-            <Die value={rolls[rolls.length - 1][0]} size={80} rolling={isRolling} />
+            <Die value={dieA.displayValue} size={80} throwing={dieA.throwing} />
             <span className="plus">+</span>
-            <Die value={rolls[rolls.length - 1][1]} size={80} rolling={isRolling} />
+            <Die value={dieB.displayValue} size={80} throwing={dieB.throwing} />
             <span className="equals">=</span>
-            <span className="sum-display">{lastSum}</span>
+            <span className="sum-display">{throwing ? '?' : lastSum}</span>
           </>
         ) : (
           <p className="no-rolls">Roll two dice</p>
@@ -65,7 +65,7 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
         <RollButton
           onRoll={handleRoll}
           label="Roll"
-          disabled={isRolling}
+          disabled={throwing}
           pulsing={rolls.length === 0}
         />
       )}

@@ -1,5 +1,6 @@
-import { useActiveStepContext } from './ActiveStepContext'
+import { useBeatContext } from './BeatContext'
 import { ErrorBoundary } from './ErrorBoundary'
+import { getSceneBeats } from './beats'
 import type { Scene as SceneType } from './types'
 
 interface ActiveSceneRendererProps {
@@ -7,14 +8,9 @@ interface ActiveSceneRendererProps {
 }
 
 export function ActiveSceneRenderer({ scenes }: ActiveSceneRendererProps) {
-  const { activeSceneId, activeStepId } = useActiveStepContext()
+  const { activeSceneId, activeBeatId, satisfyBeat } = useBeatContext()
 
-  // Build a registry from the scene list so a missing/unknown scene id is
-  // an obvious, labeled fallback rather than a blank panel (Acceptance A).
   const activeScene = scenes.find((s) => s.id === activeSceneId)
-
-  // Before the observer has resolved a scene (very first paint), default to the
-  // first scene so the stage is never blank.
   const sceneToRender = activeScene ?? scenes[0]
 
   if (!sceneToRender) {
@@ -27,7 +23,6 @@ export function ActiveSceneRenderer({ scenes }: ActiveSceneRendererProps) {
     )
   }
 
-  // If we have an active scene id but it doesn't map to a scene, show it.
   if (activeSceneId && !activeScene) {
     return (
       <aside className="stage">
@@ -39,9 +34,12 @@ export function ActiveSceneRenderer({ scenes }: ActiveSceneRendererProps) {
     )
   }
 
-  const activeStep = sceneToRender.steps.find((s) => s.id === activeStepId)
-  const activeDirective = activeStep?.directive
-  const activeRegister = activeStep?.register || 'free'
+  // Resolve the active beat's register/directive (beats may not carry these;
+  // legacy steps still do via the conversion in getSceneBeats — register
+  // defaults to 'free').
+  const beats = getSceneBeats(sceneToRender)
+  const activeBeat = beats.find((b) => b.id === activeBeatId)
+  const register = 'free' as const
 
   const ModelComponent = sceneToRender.model
 
@@ -49,9 +47,11 @@ export function ActiveSceneRenderer({ scenes }: ActiveSceneRendererProps) {
     <aside className="stage">
       <ErrorBoundary key={sceneToRender.id} label={sceneToRender.id}>
         <ModelComponent
-          activeStepId={activeStepId}
-          directive={activeDirective}
-          register={activeRegister}
+          activeStepId={activeBeat?.id ?? activeBeatId}
+          register={register}
+          satisfyGate={() => {
+            if (activeBeatId) satisfyBeat(activeBeatId)
+          }}
         />
       </ErrorBoundary>
     </aside>

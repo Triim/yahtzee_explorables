@@ -1,7 +1,7 @@
 import './App.css'
-import { ActiveStepProvider } from '@/scaffolding/ActiveStepContext'
-import { useGlobalActiveStep } from '@/scaffolding/useGlobalActiveStep'
-import { StepTrack } from '@/scaffolding/StepTrack'
+import { BeatProvider } from '@/scaffolding/BeatContext'
+import { useActiveBeat } from '@/scaffolding/useActiveBeat'
+import { BeatTrack } from '@/scaffolding/BeatTrack'
 import { ActiveSceneRenderer } from '@/scaffolding/ActiveSceneRenderer'
 import { openingScene } from '@/scenes/OpeningScene'
 import { scene0 } from '@/scenes/Scene0Intuition'
@@ -34,11 +34,11 @@ const allScenes = [
 ]
 
 function AppContent() {
-  useGlobalActiveStep()
+  useActiveBeat()
 
   return (
     <div className="layout">
-      <StepTrack scenes={allScenes} />
+      <BeatTrack scenes={allScenes} />
       <ActiveSceneRenderer scenes={allScenes} />
     </div>
   )
@@ -46,9 +46,9 @@ function AppContent() {
 
 function App() {
   return (
-    <ActiveStepProvider>
+    <BeatProvider>
       <AppContent />
-    </ActiveStepProvider>
+    </BeatProvider>
   )
 }
 

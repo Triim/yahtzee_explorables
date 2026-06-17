@@ -6,22 +6,20 @@ const prefersReducedMotion = () =>
 
 interface UseDieRollResult {
   displayValue: number
-  rolling: boolean
-  settling: boolean
-  /** Start the cosmetic tumble, settling on `final` (the honest engine result). */
+  throwing: boolean
+  /** Throw the die, landing on `final` (the honest engine result). */
   start: (final: number) => void
 }
 
 /**
- * Cosmetic dice-roll animation over an honest result.
- * - 0–420ms: cycle a random face every 60ms (~7 swaps)
- * - at 420ms: snap to `final`, play a 180ms settle
- * Reduced motion: snap to `final` immediately, no cycling.
+ * Cosmetic dice-throw over an honest result (Part 2 §D).
+ * - 0–480ms: cycle a random face every 55ms
+ * - at 480ms: snap to `final`; the CSS throw arc/bounce runs to 600ms
+ * Reduced motion: snap to `final` immediately, no cycling, no class.
  */
 export function useDieRoll(initialValue: number): UseDieRollResult {
   const [displayValue, setDisplayValue] = useState(initialValue)
-  const [rolling, setRolling] = useState(false)
-  const [settling, setSettling] = useState(false)
+  const [throwing, setThrowing] = useState(false)
 
   const cycleRef = useRef<number | null>(null)
   const timersRef = useRef<number[]>([])
@@ -42,34 +40,32 @@ export function useDieRoll(initialValue: number): UseDieRollResult {
 
     if (prefersReducedMotion()) {
       setDisplayValue(final)
-      setRolling(false)
-      setSettling(false)
+      setThrowing(false)
       return
     }
 
-    setRolling(true)
-    setSettling(false)
+    setThrowing(true)
 
-    // Cycle random faces every 60ms during the shake.
+    // Cycle random faces every 55ms during the throw.
     cycleRef.current = window.setInterval(() => {
       setDisplayValue(Math.floor(Math.random() * 6) + 1)
-    }, 60)
+    }, 55)
 
-    // At 420ms: stop cycling, show the honest result, play settle.
-    const settleStart = window.setTimeout(() => {
+    // At 480ms: stop cycling, lock the honest result (arc/bounce finishes the
+    // last 120ms of the 600ms CSS animation).
+    const lock = window.setTimeout(() => {
       if (cycleRef.current !== null) {
         window.clearInterval(cycleRef.current)
         cycleRef.current = null
       }
       setDisplayValue(final)
-      setRolling(false)
-      setSettling(true)
+    }, 480)
+    timersRef.current.push(lock)
 
-      const settleEnd = window.setTimeout(() => setSettling(false), 180)
-      timersRef.current.push(settleEnd)
-    }, 420)
-    timersRef.current.push(settleStart)
+    // At 600ms: animation done.
+    const done = window.setTimeout(() => setThrowing(false), 600)
+    timersRef.current.push(done)
   }
 
-  return { displayValue, rolling, settling, start }
+  return { displayValue, throwing, start }
 }

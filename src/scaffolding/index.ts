@@ -1,9 +1,18 @@
-export { SceneComponent } from './Scene'
-export { StepRenderer } from './StepRenderer'
 export { Formula } from './Formula'
-export { useActiveStep } from './useActiveStep'
-export { useGlobalActiveStep } from './useGlobalActiveStep'
-export { ActiveStepProvider, useActiveStepContext } from './ActiveStepContext'
-export { StepTrack } from './StepTrack'
+export { RichText } from './RichText'
+export { BeatProvider, useBeatContext } from './BeatContext'
+export { useActiveBeat } from './useActiveBeat'
+export { BeatTrack } from './BeatTrack'
 export { ActiveSceneRenderer } from './ActiveSceneRenderer'
-export type { Step, Scene, Directive, Register, SceneModelProps } from './types'
+export { ErrorBoundary } from './ErrorBoundary'
+export { getSceneBeats } from './beats'
+export type {
+  Step,
+  Scene,
+  Beat,
+  GateSpec,
+  GateKind,
+  Directive,
+  Register,
+  SceneModelProps,
+} from './types'

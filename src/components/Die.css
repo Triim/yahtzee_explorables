@@ -1,6 +1,15 @@
+.die-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .die {
   display: block;
   transform-origin: center;
+  position: relative;
+  z-index: 1;
 }
 
 .die--clickable {
@@ -27,42 +36,78 @@
   stroke-width: 3;
 }
 
-/* ---- Roll animation (Section C) ---- */
-@keyframes dieShake {
+/* Soft contact shadow under the die */
+.die-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 70%;
+  height: 10px;
+  transform: translateX(-50%) scaleX(1);
+  transform-origin: center;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---- Throw animation (Part 2 §D) ---- */
+@keyframes dieThrow {
   0% {
-    transform: translateY(0) rotate(-8deg) scale(1);
+    transform: translateY(0) rotate(0deg) scale(1);
   }
-  50% {
-    transform: translateY(-6px) rotate(8deg) scale(1.08);
-  }
+  12% {
+    transform: translateY(3px) rotate(0deg) scale(0.9);
+  } /* wind up */
+  45% {
+    transform: translateY(-16px) rotate(300deg) scale(1.05);
+  } /* toss + spin up */
+  80% {
+    transform: translateY(0) rotate(520deg) scale(1);
+  } /* coming down */
+  90% {
+    transform: translateY(0) rotate(540deg) scale(1.12);
+  } /* impact */
+  96% {
+    transform: translateY(0) rotate(540deg) scale(0.96);
+  } /* squash */
   100% {
-    transform: translateY(0) rotate(-6deg) scale(1.06);
-  }
+    transform: translateY(0) rotate(540deg) scale(1);
+  } /* settle */
 }
 
-@keyframes dieSettle {
-  0% {
-    transform: scale(1.08) rotate(4deg);
-  }
-  60% {
-    transform: scale(0.96) rotate(0deg);
-  }
+@keyframes dieShadow {
+  0%,
   100% {
-    transform: scale(1) rotate(0deg);
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.18;
   }
+  45% {
+    transform: translateX(-50%) scaleX(0.7);
+    opacity: 0.1;
+  } /* die lifted */
+  90% {
+    transform: translateX(-50%) scaleX(1.18);
+    opacity: 0.24;
+  } /* impact */
 }
 
-.die--rolling {
-  animation: dieShake 140ms ease-in-out infinite;
+.die--throwing {
+  animation: dieThrow 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.die--settle {
-  animation: dieSettle 180ms ease-out;
+.die--throwing + .die-shadow {
+  animation: dieShadow 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .die--rolling,
-  .die--settle {
+  .die--throwing,
+  .die--throwing + .die-shadow {
     animation: none;
   }
 }
