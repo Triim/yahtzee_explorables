@@ -8,6 +8,10 @@ import { scene2 } from '@/scenes/Scene2TwoDice'
 import { scene3 } from '@/scenes/Scene3FiveDice'
 import { scene35 } from '@/scenes/Scene35Categories'
 import { scene4, scene5 } from '@/scenes/Scene4And5'
+import { scene6 } from '@/scenes/Scene6FullTurn'
+import { scene7 } from '@/scenes/Scene7StateDP'
+import { scene8 } from '@/scenes/Scene8Strategies'
+import { scene9, scene10 } from '@/scenes/Scene9And10'
 
 function App() {
   return (
@@ -21,6 +25,11 @@ function App() {
       <SceneComponent scene={scene35} />
       <SceneComponent scene={scene4} />
       <SceneComponent scene={scene5} />
+      <SceneComponent scene={scene6} />
+      <SceneComponent scene={scene7} />
+      <SceneComponent scene={scene8} />
+      <SceneComponent scene={scene9} />
+      <SceneComponent scene={scene10} />
     </main>
   )
 }

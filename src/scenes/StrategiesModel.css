@@ -1,0 +1,90 @@
+.strategies-model {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.strategies-model h2 {
+  margin-top: 0;
+  color: var(--accent);
+  font-size: 1.3rem;
+}
+
+.strategies-bars {
+  width: 100%;
+  max-width: 450px;
+}
+
+.strategy-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 70px;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.strategy-name {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.bar-container {
+  background: var(--panel-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  height: 32px;
+  border: 1px solid var(--border-color);
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.6s ease-out;
+}
+
+.strategy-value {
+  text-align: right;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-text {
+  text-align: center;
+  max-width: 400px;
+}
+
+.results-text p {
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.gap-text {
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.re-run-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.re-run-button:hover {
+  background: var(--accent-bg);
+}
