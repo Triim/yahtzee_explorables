@@ -1,28 +1,29 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import { multisetCount } from '@/engine'
 import './FiveDiceModel.css'
 
-export function FiveDiceModel({ activeStepId }: SceneModelProps) {
-  const [hand, setHand] = useState<number[]>([1, 1, 2, 3, 5])
+export function FiveDiceModel({ activeStepId, satisfyGate }: SceneModelProps) {
+  const [hand, setHand] = useState<number[]>([5, 3, 2, 1, 1])
   const [sorted, setSorted] = useState(false)
   const [showCollapse, setShowCollapse] = useState(false)
 
   const handleToggleSorted = () => {
     if (!sorted) {
-      setHand([...hand].sort((a, b) => a - b))
+      setHand([1, 1, 2, 3, 5])
       setShowCollapse(true)
       setTimeout(() => setShowCollapse(false), 800)
     } else {
       setHand([5, 3, 2, 1, 1])
     }
     setSorted(!sorted)
+    satisfyGate?.() // gate: toggled order on/off
   }
 
-  const displayHand = sorted ? hand : [5, 3, 2, 1, 1]
+  const displayHand = hand
   const uniqueCount = multisetCount()
-  const showToggle = activeStepId && activeStepId.startsWith('s3-3')
-  const showCount = activeStepId && activeStepId.startsWith('s3-4')
+  const showToggle = activeStepId === 'B3.2'
+  const showCount = activeStepId === 'B3.2' || activeStepId === 'B3.3'
 
   return (
     <div className="five-dice-model">
@@ -64,40 +65,30 @@ export function FiveDiceModel({ activeStepId }: SceneModelProps) {
   )
 }
 
-export const scene3 = {
+export const scene3: Scene = {
   id: 'scene-3',
   model: FiveDiceModel,
-  steps: [
+  beats: [
     {
-      id: 's3-1',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'fivedice' },
-      text: 'Five dice. Counting pairs won\'t work anymore — there are $6^5 = 7776$ ways for them to fall.',
+      id: 'B3.1',
+      scene: 'scene-3',
+      prompt:
+        'Five dice. Counting pairs won\'t work — there are $6^5 = 7776$ ways for them to fall, and no table in five dimensions.',
     },
     {
-      id: 's3-2',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'You can\'t draw a 7776-cell table in five dimensions. And yet these outcomes have to be described somehow. How?',
+      id: 'B3.2',
+      scene: 'scene-3',
+      prompt:
+        "The trick: order doesn't matter — only which faces showed. Sort the hand and watch.",
+      payoff:
+        'Stop telling order apart and 7776 outcomes collapse into just 252 states: $\\binom{6+5-1}{5}=252$. A multiset — the most economical description of a hand. From here on a "hand" is one state.',
+      gate: { kind: 'toggle' },
     },
     {
-      id: 's3-3',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      text: 'The trick: the order of the dice doesn\'t matter — only which faces showed. Sort them. $(6,1,5,1,2)$ and $(1,1,2,5,6)$ are the same thing, however you shuffle them.',
-    },
-    {
-      id: 's3-4',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'Stop telling order apart, and 7776 outcomes collapse into just 252 states: $\\binom{6+5-1}{5}=252$. This is a multiset — the most economical description of a hand. From here on, a "hand" isn\'t five dice in places; it\'s one state.',
-    },
-    {
-      id: 's3-5',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'Now the hand is a clean object you can work with. And here, for the first time, the real question of the game appears: what do you keep?',
+      id: 'B3.3',
+      scene: 'scene-3',
+      prompt:
+        'Now the hand is a clean object. And here, for the first time, the real question of the game: what do you keep?',
     },
   ],
 }

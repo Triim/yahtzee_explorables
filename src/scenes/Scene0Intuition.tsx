@@ -1,129 +1,133 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import './IntuitionNotebook.css'
 
-interface Answer {
-  q1: string | null // 7 vs 12
-  q2: string | null // gambler's fallacy
-  q3: string | null // yahtzee decision
+/* Scene 0 — three intuition guesses, one per beat. The notebook shows the
+ * active beat's question and records the locked-in answer; choosing satisfies
+ * the beat's gate. Answers are recalled later in the article. */
+
+type QKey = 'q1' | 'q2' | 'q3'
+
+const QUESTIONS: Record<
+  QKey,
+  { beat: string; text: string; options: { value: string; label: string }[] }
+> = {
+  q1: {
+    beat: 'B0.1',
+    text: 'Sum of 7 or sum of 12 — which comes up more often?',
+    options: [
+      { value: '7', label: '7' },
+      { value: '12', label: '12' },
+      { value: 'equally', label: 'Equally' },
+    ],
+  },
+  q2: {
+    beat: 'B0.2',
+    text: "A six hasn't shown in ten rolls. Its chance now is…",
+    options: [
+      { value: 'higher', label: 'Higher' },
+      { value: 'lower', label: 'Lower' },
+      { value: 'same', label: 'Same' },
+    ],
+  },
+  q3: {
+    beat: 'B0.3',
+    text: 'Four sixes, one reroll left — gamble for the fifth six?',
+    options: [
+      { value: 'yes', label: 'Yes' },
+      { value: 'no', label: 'No' },
+    ],
+  },
 }
 
-export function IntuitionNotebook(_props: SceneModelProps) {
-  const [answers, setAnswers] = useState<Answer>({
+export function IntuitionNotebook({ activeStepId, satisfyGate }: SceneModelProps) {
+  const [answers, setAnswers] = useState<Record<QKey, string | null>>({
     q1: null,
     q2: null,
     q3: null,
   })
 
-  const selectAnswer = (question: keyof Answer, value: string) => {
-    setAnswers((prev) => ({ ...prev, [question]: value }))
-  }
+  const activeKey = (Object.keys(QUESTIONS) as QKey[]).find(
+    (k) => QUESTIONS[k].beat === activeStepId
+  )
 
-  const answeredCount = Object.values(answers).filter((a) => a !== null).length
+  const select = (key: QKey, value: string) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }))
+    satisfyGate?.()
+  }
 
   return (
     <div className="intuition-notebook">
-      <h2>Three Quick Guesses</h2>
-
-      <div className="intuition-question">
-        <p className="question-text">
-          You roll two dice. Which comes up more often: a sum of <strong>7</strong> or a sum of <strong>12</strong>?
-        </p>
-        <div className="button-group">
-          {['7', '12', 'equally'].map((option) => (
-            <button
-              key={option}
-              className={`option-button ${
-                answers.q1 === option ? 'selected' : ''
-              }`}
-              onClick={() => selectAnswer('q1', option)}
-            >
-              {option === '7' && '7'}
-              {option === '12' && '12'}
-              {option === 'equally' && 'Equally'}
-            </button>
-          ))}
+      {/* The active question */}
+      {activeKey && (
+        <div className="intuition-question active-question">
+          <p className="question-text">{QUESTIONS[activeKey].text}</p>
+          <div className="button-group">
+            {QUESTIONS[activeKey].options.map((opt) => (
+              <button
+                key={opt.value}
+                className={`option-button ${
+                  answers[activeKey] === opt.value ? 'selected' : ''
+                }`}
+                onClick={() => select(activeKey, opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="intuition-question">
-        <p className="question-text">
-          A six hasn't shown up in ten rolls. Is its chance of landing now higher, lower, or the same as ever?
-        </p>
-        <div className="button-group">
-          {['higher', 'lower', 'same'].map((option) => (
-            <button
-              key={option}
-              className={`option-button ${
-                answers.q2 === option ? 'selected' : ''
-              }`}
-              onClick={() => selectAnswer('q2', option)}
-            >
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="intuition-question">
-        <p className="question-text">
-          You're holding four sixes; the fifth die shows something else, and you have one reroll left. Worth the risk for that fifth six?
-        </p>
-        <div className="button-group">
-          {['yes', 'no'].map((option) => (
-            <button
-              key={option}
-              className={`option-button ${
-                answers.q3 === option ? 'selected' : ''
-              }`}
-              onClick={() => selectAnswer('q3', option)}
-            >
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="intuition-footer">
-        <p className="progress-text">
-          Answered {answeredCount} of 3
-        </p>
-        {answeredCount === 3 && (
-          <p className="confirm-text">✓ Answers locked. We'll return to these.</p>
-        )}
+      {/* Notebook of locked-in answers */}
+      <div className="intuition-ledger">
+        {(Object.keys(QUESTIONS) as QKey[]).map((k, i) => (
+          <div
+            key={k}
+            className={`ledger-row ${answers[k] ? 'filled' : ''} ${
+              activeKey === k ? 'current' : ''
+            }`}
+          >
+            <span className="ledger-index">{i + 1}</span>
+            <span className="ledger-value">
+              {answers[k]
+                ? QUESTIONS[k].options.find((o) => o.value === answers[k])?.label
+                : '—'}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-export const scene0 = {
+export const scene0: Scene = {
   id: 'scene-0',
   model: IntuitionNotebook,
-  steps: [
+  beats: [
     {
-      id: 's0-1',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'intuition' },
-      text: 'Let\'s not start with math. Let\'s start with three guesses — answer on instinct, we\'ll check them later. You roll two dice. Which comes up more often: a sum of **7** or a sum of **12**?',
+      id: 'B0.1',
+      scene: 'scene-0',
+      prompt:
+        "Before any math — three guesses, on instinct. First: roll two dice. Which is more common, a sum of 7 or a sum of 12?",
+      payoff: "Locked in. We'll come back to it.",
+      gate: { kind: 'choice' },
     },
     {
-      id: 's0-2',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Second. A six hasn\'t shown up in ten rolls. Is its chance of landing now higher, lower, or the same as ever?',
+      id: 'B0.2',
+      scene: 'scene-0',
+      prompt:
+        "Second. A six hasn't shown up in ten rolls. Is its chance of landing now higher, lower, or the same as ever?",
+      payoff: 'Noted. Hold that thought.',
+      gate: { kind: 'choice' },
     },
     {
-      id: 's0-3',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'And third. You\'re holding four sixes; the fifth die shows something else, and you have one reroll left. Worth the risk for that fifth six?',
-    },
-    {
-      id: 's0-4',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'Got your answers? Good. We\'ll come back to every one of them — and by the end you may answer differently. For now, let\'s pick up the simplest random object there is and see what it can do.',
+      id: 'B0.3',
+      scene: 'scene-0',
+      prompt:
+        "And third. You're holding four sixes, one reroll left. Worth the risk for that fifth six?",
+      payoff:
+        "All three locked. We'll return to every one — and by the end you may answer differently. Now: the simplest random object there is.",
+      gate: { kind: 'choice' },
     },
   ],
 }

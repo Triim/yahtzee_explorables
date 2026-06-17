@@ -47,7 +47,29 @@
 .bar-fill {
   height: 100%;
   background: var(--accent);
-  transition: width 0.3s ease;
+  transition: width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.rollmode-toggle {
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.rollmode-toggle:hover {
+  background: var(--accent-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
+    transition: none;
+  }
 }
 
 .probability-text {

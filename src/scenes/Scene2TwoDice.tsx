@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import { Die, RollButton, Histogram, useDieRoll } from '@/components'
 import './TwoDiceModel.css'
 
-export function TwoDiceModel({ activeStepId }: SceneModelProps) {
+export function TwoDiceModel({ activeStepId, satisfyGate }: SceneModelProps) {
   const [rolls, setRolls] = useState<Array<[number, number]>>([])
   const [selectedSum, setSelectedSum] = useState<number | null>(null)
   const dieA = useDieRoll(1)
@@ -15,7 +15,9 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
     const d2 = Math.floor(Math.random() * 6) + 1 // honest
     dieA.start(d1)
     window.setTimeout(() => dieB.start(d2), 70) // stagger
-    setRolls([...rolls, [d1, d2]])
+    const next = [...rolls, [d1, d2]] as Array<[number, number]>
+    setRolls(next)
+    if (next.length >= 6) satisfyGate?.() // gate: roll ≥ 6
   }
 
   // Empirical histogram (from real rolls)
@@ -39,9 +41,14 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
     return ways
   }
 
-  const showGrid = activeStepId && activeStepId.startsWith('s2-3')
+  const showGrid = activeStepId === 'B2.2'
   const lastRoll = rolls.length > 0 ? rolls[rolls.length - 1] : null
   const lastSum = lastRoll ? lastRoll[0] + lastRoll[1] : null
+
+  const selectSum = (sum: number) => {
+    setSelectedSum(selectedSum === sum ? null : sum)
+    satisfyGate?.() // gate: a sum chosen on the grid
+  }
 
   return (
     <div className="two-dice-model">
@@ -99,9 +106,7 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
                   <div
                     key={`${d1}-${d2}`}
                     className={`grid-cell ${isSelected ? 'selected' : ''}`}
-                    onClick={() =>
-                      setSelectedSum(selectedSum === sum ? null : sum)
-                    }
+                    onClick={() => selectSum(sum)}
                   >
                     <span className="cell-text">{sum}</span>
                   </div>
@@ -127,40 +132,30 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
   )
 }
 
-export const scene2 = {
+export const scene2: Scene = {
   id: 'scene-2',
   model: TwoDiceModel,
-  steps: [
+  beats: [
     {
-      id: 's2-1',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'twodice' },
-      text: 'Two dice — and now we care not about each one, but about their sum. Roll, and watch which sums show up most.',
+      id: 'B2.1',
+      scene: 'scene-2',
+      prompt: 'Two dice now — we care about their sum. Roll a handful and watch.',
+      payoff:
+        "Strange: the sums don't come out evenly. Seven keeps appearing, two and twelve almost never. The dice are fair — so where's the bias from?",
+      gate: { kind: 'roll', needed: 6 },
     },
     {
-      id: 's2-2',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Strange: the sums don\'t come out evenly. Seven keeps appearing, while two and twelve almost never do. But the dice are fair. So where\'s the bias from?',
+      id: 'B2.2',
+      scene: 'scene-2',
+      prompt: 'Here are all thirty-six pairs. Pick a sum — see how many ways make it.',
+      payoff:
+        'Seven is made by six pairs; twelve by one. That\'s the bias: $P(A)=|A|/|\\Omega|$. The same probability you just measured by rolling — there measured, here counted. Two faces of one idea.',
+      gate: { kind: 'choice' },
     },
     {
-      id: 's2-3',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      text: 'Let\'s lay it all out. Here are all thirty-six pairs that can come up. Click a sum — and see how many ways it can be made.',
-    },
-    {
-      id: 's2-4',
-      copyType: 'формула' as const,
-      register: 'free' as const,
-      text: 'Seven is made by six pairs; twelve by a single one. That\'s the bias: $P(A)=|A|/|\\Omega|$. // Notice: this is the same probability we just measured by rolling. There we **measured** it; here we **counted** it. Two faces of one idea — and they agree.',
-    },
-    {
-      id: 's2-5',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'Thirty-six pairs you can still draw. But what about five dice?',
+      id: 'B2.3',
+      scene: 'scene-2',
+      prompt: 'Thirty-six pairs you can still draw. But what about five dice?',
     },
   ],
 }

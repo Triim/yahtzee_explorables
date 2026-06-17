@@ -1,85 +1,98 @@
-import type { SceneModelProps } from '@/scaffolding'
+import { useState, useMemo } from 'react'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import { generateAllHands, scoreHand, Category } from '@/engine'
 import './CategoriesModel.css'
 
-export function CategoriesModel(_props: SceneModelProps) {
-  const allHands = generateAllHands()
-  const categories = [
-    'ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
-    'three-of-a-kind', 'four-of-a-kind', 'full-house',
-    'small-straight', 'large-straight', 'yahtzee', 'chance'
-  ] as const
+const CATEGORIES = [
+  'three-of-a-kind',
+  'four-of-a-kind',
+  'full-house',
+  'small-straight',
+  'large-straight',
+  'yahtzee',
+] as const
 
-  // Count hands that qualify for each category
-  const getCategoryStats = (cat: typeof categories[number]) => {
-    let count = 0
-    for (const hand of allHands) {
-      if (scoreHand(hand, cat as Category) > 0) {
-        count++
+export function CategoriesModel({ activeStepId, satisfyGate }: SceneModelProps) {
+  const [threeRolls, setThreeRolls] = useState(false)
+
+  // Real one-roll probability per category over all 252 multisets.
+  const oneRollP = useMemo(() => {
+    const hands = generateAllHands()
+    const out: Record<string, number> = {}
+    for (const cat of CATEGORIES) {
+      let count = 0
+      for (const hand of hands) {
+        if (scoreHand(hand, cat as Category) > 0) count++
       }
+      out[cat] = count / hands.length
     }
-    const probability = count / allHands.length
-    return { count, probability }
+    return out
+  }, [])
+
+  const showToggle = activeStepId === 'B35.2' || activeStepId === 'B35.3'
+
+  const toggle = () => {
+    setThreeRolls((v) => !v)
+    satisfyGate?.() // gate: toggled roll mode
   }
+
+  // Honest: probability of the category in at least one of 3 independent rolls.
+  const probFor = (cat: string) =>
+    threeRolls ? 1 - (1 - oneRollP[cat]) ** 3 : oneRollP[cat]
+
+  const maxP = Math.max(...CATEGORIES.map((c) => probFor(c)))
 
   return (
     <div className="categories-model">
-      <h2>Category Probabilities (1 roll of 5 dice)</h2>
       <div className="category-bars">
-        {categories.map((cat) => {
-          const { probability } = getCategoryStats(cat)
-          const displayName = cat.replace('-', ' ')
+        {CATEGORIES.map((cat) => {
+          const p = probFor(cat)
+          const width = (p / maxP) * 100
           return (
             <div key={cat} className="category-row">
-              <div className="category-label">{displayName}</div>
+              <div className="category-label">{cat.replace(/-/g, ' ')}</div>
               <div className="bar-container">
-                <div
-                  className="bar-fill"
-                  style={{ width: `${probability * 100}%` }}
-                />
+                <div className="bar-fill" style={{ width: `${width}%` }} />
               </div>
-              <div className="probability-text">
-                {(probability * 100).toFixed(1)}%
-              </div>
+              <div className="probability-text">{(p * 100).toFixed(1)}%</div>
             </div>
           )
         })}
       </div>
-      <p className="note">
-        Yahtzee is rarest by far. Four of a kind beats small straight.
-      </p>
+
+      {showToggle && (
+        <button className="rollmode-toggle" onClick={toggle}>
+          {threeRolls ? '1 roll' : '3 rolls'}
+        </button>
+      )}
     </div>
   )
 }
 
-export const scene35 = {
+export const scene35: Scene = {
   id: 'scene-35',
   model: CategoriesModel,
-  steps: [
+  beats: [
     {
-      id: 's35-1',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'categories' },
-      text: 'In Yahtzee a hand is worth something only if it forms a combination. And a combination is just a question you ask the hand: are there three of a kind here? four? a straight? a full house? The bars show: out of 252 multisets, how many answer "yes" to each.',
+      id: 'B35.1',
+      scene: 'scene-35',
+      prompt:
+        'A combination is just a question you ask the hand: three of a kind? a straight? a full house? The bars show how many of the 252 hands answer "yes" — on a single roll.',
     },
     {
-      id: 's35-2',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Which combination is easier to get? Don\'t guess — look at the odds from a single roll.',
+      id: 'B35.2',
+      scene: 'scene-35',
+      prompt:
+        "But you don't get one roll — you get three. Switch it on.",
+      payoff:
+        'The odds jump. Four of a kind beats a small straight; Yahtzee stays rarest by an order of magnitude. Rerolls change the whole picture — the nearly impossible becomes real.',
+      gate: { kind: 'toggle' },
     },
     {
-      id: 's35-3',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'Four of a kind turns out likelier than a small straight, and Yahtzee rarest of all by an order of magnitude.',
-    },
-    {
-      id: 's35-4',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'Except "likelier" isn\'t yet "better." Before we price combinations, let\'s settle the reroll itself.',
+      id: 'B35.3',
+      scene: 'scene-35',
+      prompt:
+        '"Likelier" still isn\'t "better." Before we price combinations against each other, settle the reroll itself: what\'s even worth keeping?',
     },
   ],
 }

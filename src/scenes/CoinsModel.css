@@ -102,6 +102,33 @@
   color: var(--text-color);
 }
 
+.scoring-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.75rem 0;
+}
+
+.scoring-btn {
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.scoring-btn:hover {
+  background: var(--accent-bg);
+}
+
+.scoring-btn.selected {
+  background: var(--accent);
+  color: white;
+}
+
 .coins-threshold {
   margin-top: 1rem;
   padding: 1.5rem;
