@@ -1,0 +1,78 @@
+.intuition-notebook {
+  padding: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.intuition-notebook h2 {
+  text-align: center;
+  margin-top: 0;
+  color: var(--accent);
+}
+
+.intuition-question {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.question-text {
+  margin: 0 0 1rem 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.option-button {
+  flex: 1;
+  min-width: 70px;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.option-button.selected {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.intuition-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.progress-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.confirm-text {
+  margin: 0.5rem 0 0 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
