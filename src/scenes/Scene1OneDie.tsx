@@ -1,103 +1,125 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
 import { Die, RollButton, Histogram } from '@/components'
 import './OneDieModel.css'
 
-export function OneDieModel(_props: SceneModelProps) {
+export function OneDieModel({ activeStepId }: SceneModelProps) {
   const [rolls, setRolls] = useState<number[]>([])
-  const [numRollsDisplay, setNumRollsDisplay] = useState(10)
+  const [isRolling, setIsRolling] = useState(false)
   const [prediction, setPrediction] = useState<number | null>(null)
+  const [stagedPrediction, setStagedPrediction] = useState(false)
 
   const handleRoll = () => {
+    setIsRolling(true)
     const newRoll = Math.floor(Math.random() * 6) + 1
-    setRolls([...rolls, newRoll])
+    setTimeout(() => {
+      setRolls([...rolls, newRoll])
+      setIsRolling(false)
+    }, 600)
   }
 
-  // Generate synthetic rolls if needed
-  const displayedRolls = useMemo(() => {
-    if (rolls.length === 0) return []
+  const lastRoll = rolls.length > 0 ? rolls[rolls.length - 1] : 1
 
-    // If we have some rolls, extend synthetically to show LLN
-    const extended = [...rolls]
-    while (extended.length < numRollsDisplay) {
-      extended.push(Math.floor(Math.random() * 6) + 1)
-    }
-    return extended.slice(0, numRollsDisplay)
-  }, [rolls, numRollsDisplay])
-
-  // Calculate histogram
+  // Empirical histogram (only from real rolls, no synthetic)
   const histData = new Map<number, number>()
   for (let i = 1; i <= 6; i++) {
-    const count = displayedRolls.filter((r) => r === i).length
-    const freq = displayedRolls.length > 0 ? count / displayedRolls.length : 0
+    const count = rolls.filter((r) => r === i).length
+    const freq = rolls.length > 0 ? count / rolls.length : 0
     histData.set(i, freq)
   }
 
+  // Theory overlay (1/6 line)
+  const theoryData = new Map<number, number>()
+  for (let i = 1; i <= 6; i++) {
+    theoryData.set(i, 1 / 6)
+  }
+
+  const showSlider = activeStepId && activeStepId.startsWith('s1-4')
+  const showTheoryLine = activeStepId && activeStepId.startsWith('s1-5')
+  const showPredictionSetup = activeStepId && activeStepId.startsWith('s1-6')
+
   return (
     <div className="one-die-model">
+      {/* Die display (always visible) */}
       <div className="die-display">
-        <Die
-          value={rolls.length > 0 ? rolls[rolls.length - 1] : 1}
-          size={100}
-        />
+        <Die value={lastRoll} size={100} isRolling={isRolling} />
       </div>
 
+      {/* Roll button for first 10 rolls (base affordance) */}
       {rolls.length < 10 && (
         <div className="roll-section">
-          <p className="rolls-text">Rolls so far: {rolls.length} / 10</p>
-          <RollButton onRoll={handleRoll} label="Roll" pulsing={rolls.length === 0} />
-        </div>
-      )}
-
-      {rolls.length > 0 && (
-        <div className="histogram-section">
-          <div className="slider-control">
-            <label htmlFor="rolls-slider">Display: {numRollsDisplay} rolls</label>
-            <input
-              id="rolls-slider"
-              type="range"
-              min={10}
-              max={100000}
-              step={100}
-              value={numRollsDisplay}
-              onChange={(e) => setNumRollsDisplay(parseInt(e.target.value, 10))}
-              className="slider"
-            />
-            <span className="slider-value">{numRollsDisplay.toLocaleString()}</span>
-          </div>
-
-          <Histogram
-            data={histData}
-            title={`Observed frequencies (${displayedRolls.length.toLocaleString()} rolls)`}
-            xLabel="Face value"
-            yLabel="Frequency"
-            width={350}
-            height={200}
+          <p className="rolls-text">Rolls: {rolls.length} / 10</p>
+          <RollButton
+            onRoll={handleRoll}
+            label="Roll"
+            disabled={isRolling}
+            pulsing={rolls.length === 0}
           />
         </div>
       )}
 
-      {rolls.length >= 10 && prediction === null && (
-        <div className="prediction-section">
+      {/* Empirical histogram (builds from real rolls) */}
+      {rolls.length > 0 && (
+        <div className="histogram-section empirical">
+          <Histogram
+            data={histData}
+            title="Observed"
+            xLabel="Face"
+            yLabel="Frequency"
+            width={300}
+            height={180}
+          />
+        </div>
+      )}
+
+      {/* Theory line overlay (unlocks at s1-5) */}
+      {showTheoryLine && rolls.length > 0 && (
+        <div className="histogram-section theory-line">
+          <p className="theory-label">1/6 line (expected)</p>
+          <Histogram
+            data={theoryData}
+            title="Theory"
+            xLabel="Face"
+            yLabel="P(X)"
+            width={300}
+            height={180}
+          />
+        </div>
+      )}
+
+      {/* Slider (unlocks at s1-4) — manual for now, will be driven later */}
+      {showSlider && rolls.length > 0 && (
+        <div className="slider-control">
+          <p className="slider-label">More rolls to see LLN</p>
+          <p className="slider-note">(Scroll to see effect)</p>
+        </div>
+      )}
+
+      {/* Prediction setup (clearly staged at s1-6) */}
+      {showPredictionSetup && rolls.length >= 10 && prediction === null && (
+        <div className="prediction-section staged">
           <p className="prediction-prompt">
-            Five sixes in a row. What comes next?
+            <span className="prediction-label">[Demonstration]</span>
+            Six sixes. The next roll is...
           </p>
           <button
             className="prediction-button"
             onClick={() => {
+              setStagedPrediction(true)
               setPrediction(Math.floor(Math.random() * 6) + 1)
             }}
           >
-            Roll for next
+            Show next
           </button>
         </div>
       )}
 
-      {prediction !== null && (
+      {/* Prediction result */}
+      {prediction !== null && stagedPrediction && (
         <div className="prediction-result">
-          <p>You predicted the next roll... and got: <strong>{prediction}</strong></p>
+          <p className="prediction-outcome">{prediction}</p>
           <p className="prediction-note">
-            The die has no memory. Rolls are independent.
+            The die doesn't remember. Rolls are independent.
           </p>
         </div>
       )}

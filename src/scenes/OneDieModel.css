@@ -5,13 +5,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.5rem;
   padding: 2rem;
   overflow-y: auto;
 }
 
 .die-display {
   animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .die-display {
+    animation: none;
+  }
 }
 
 .roll-section {
@@ -26,33 +41,48 @@
 
 .histogram-section {
   width: 100%;
-  max-width: 400px;
+  max-width: 350px;
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
 }
 
-.slider-control {
-  margin-bottom: 1.5rem;
+.histogram-section.empirical {
+  animation: slideIn 0.5s ease-out;
+}
+
+.histogram-section.theory-line {
+  margin-top: 1rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.theory-label {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
   text-align: center;
 }
 
-.slider-control label {
-  display: block;
-  margin-bottom: 0.5rem;
+.slider-control {
+  margin-top: 1rem;
+  text-align: center;
+  padding: 1rem;
+  background: var(--accent-bg);
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  animation: slideIn 0.5s ease-out;
+}
+
+.slider-label {
+  margin: 0;
   font-size: 0.95rem;
   color: var(--text-color);
+  font-weight: 500;
 }
 
-.slider {
-  width: 100%;
-  max-width: 300px;
-  cursor: pointer;
-}
-
-.slider-value {
-  display: block;
-  margin-top: 0.5rem;
+.slider-note {
+  margin: 0.5rem 0 0 0;
   font-size: 0.85rem;
   color: var(--text-muted);
-  font-weight: 500;
 }
 
 .prediction-section {
@@ -61,12 +91,25 @@
   background: var(--panel-bg);
   border-radius: 8px;
   border: 1px solid var(--border-color);
+  animation: slideIn 0.5s ease-out;
+}
+
+.prediction-section.staged {
+  border: 2px dashed var(--text-muted);
 }
 
 .prediction-prompt {
   margin: 0 0 1rem 0;
   font-size: 1rem;
   color: var(--text-color);
+}
+
+.prediction-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.5rem;
 }
 
 .prediction-button {
@@ -90,29 +133,47 @@
   background: var(--accent-bg);
   border-radius: 8px;
   border: 1px solid var(--accent);
+  animation: slideIn 0.5s ease-out;
 }
 
-.prediction-result p {
-  margin: 0.5rem 0;
-  color: var(--text-color);
+.prediction-outcome {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .prediction-note {
+  margin: 0.5rem 0 0 0;
   font-size: 0.9rem;
   color: var(--text-muted);
 }
 
-@keyframes float {
-  0%, 100% {
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(-10px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .die-display {
+  .histogram-section,
+  .slider-control,
+  .prediction-section,
+  .prediction-result {
     animation: none;
   }
 }
