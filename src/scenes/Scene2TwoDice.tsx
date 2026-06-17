@@ -1,34 +1,32 @@
 import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
 import { Die, RollButton, Histogram } from '@/components'
-import { sumOfTwoDiceDistribution } from '@/engine'
 import './TwoDiceModel.css'
 
-export function TwoDiceModel(_props: SceneModelProps) {
+export function TwoDiceModel({ activeStepId }: SceneModelProps) {
   const [rolls, setRolls] = useState<Array<[number, number]>>([])
+  const [isRolling, setIsRolling] = useState(false)
   const [selectedSum, setSelectedSum] = useState<number | null>(null)
 
   const handleRoll = () => {
+    setIsRolling(true)
     const d1 = Math.floor(Math.random() * 6) + 1
     const d2 = Math.floor(Math.random() * 6) + 1
-    setRolls([...rolls, [d1, d2]])
+    setTimeout(() => {
+      setRolls([...rolls, [d1, d2]])
+      setIsRolling(false)
+    }, 600)
   }
 
-  // Calculate sum distribution
-  const dist = sumOfTwoDiceDistribution()
-  const histData = new Map<number, number>()
+  // Empirical histogram (from real rolls)
+  const empiricalData = new Map<number, number>()
   for (let i = 2; i <= 12; i++) {
-    histData.set(i, dist[i] || 0)
+    const count = rolls.filter(([d1, d2]) => d1 + d2 === i).length
+    const freq = rolls.length > 0 ? count / rolls.length : 0
+    empiricalData.set(i, freq)
   }
 
-  // Count rolls by sum
-  const rollCountBySum = new Map<number, number>()
-  for (const [d1, d2] of rolls) {
-    const sum = d1 + d2
-    rollCountBySum.set(sum, (rollCountBySum.get(sum) || 0) + 1)
-  }
-
-  // Ways to make a sum (6x6 grid visualization)
+  // Ways to make each sum (6x6 grid)
   const getWaysForSum = (sum: number): Array<[number, number]> => {
     const ways: Array<[number, number]> = []
     for (let d1 = 1; d1 <= 6; d1++) {
@@ -41,74 +39,88 @@ export function TwoDiceModel(_props: SceneModelProps) {
     return ways
   }
 
+  const showGrid = activeStepId && activeStepId.startsWith('s2-3')
+  const lastRoll = rolls.length > 0 ? rolls[rolls.length - 1] : null
+  const lastSum = lastRoll ? lastRoll[0] + lastRoll[1] : null
+
   return (
     <div className="two-dice-model">
+      {/* Dice display (base) */}
       <div className="dice-display">
         {rolls.length > 0 ? (
           <>
-            <Die value={rolls[rolls.length - 1][0]} size={80} />
+            <Die value={rolls[rolls.length - 1][0]} size={80} isRolling={isRolling} />
             <span className="plus">+</span>
-            <Die value={rolls[rolls.length - 1][1]} size={80} />
+            <Die value={rolls[rolls.length - 1][1]} size={80} isRolling={isRolling} />
             <span className="equals">=</span>
-            <span className="sum-display">
-              {rolls[rolls.length - 1][0] + rolls[rolls.length - 1][1]}
-            </span>
+            <span className="sum-display">{lastSum}</span>
           </>
         ) : (
-          <p className="no-rolls">No rolls yet</p>
+          <p className="no-rolls">Roll two dice</p>
         )}
       </div>
 
+      {/* Roll button (always visible) */}
       {rolls.length < 20 && (
-        <RollButton onRoll={handleRoll} label="Roll Two Dice" pulsing={rolls.length === 0} />
+        <RollButton
+          onRoll={handleRoll}
+          label="Roll"
+          disabled={isRolling}
+          pulsing={rolls.length === 0}
+        />
       )}
 
+      {/* Empirical histogram (builds from real rolls) */}
       {rolls.length > 0 && (
-        <div className="distribution-section">
+        <div className="distribution-section empirical">
           <Histogram
-            data={histData}
-            title={`Distribution (sums 2-12)`}
+            data={empiricalData}
+            title="Observed"
             xLabel="Sum"
-            yLabel="P(X)"
-            width={350}
-            height={200}
+            yLabel="Frequency"
+            width={320}
+            height={180}
           />
+        </div>
+      )}
 
-          <div className="grid-section">
-            <p className="grid-title">All 36 pairs:</p>
-            <div className="grid-6x6">
-              {Array.from({ length: 6 }, (_, i) =>
-                Array.from({ length: 6 }, (_, j) => {
-                  const d1 = i + 1
-                  const d2 = j + 1
-                  const sum = d1 + d2
-                  const isSelected =
-                    selectedSum !== null && sum === selectedSum
-                  return (
-                    <div
-                      key={`${d1}-${d2}`}
-                      className={`grid-cell ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedSum(selectedSum === sum ? null : sum)}
-                    >
-                      <span className="cell-text">{sum}</span>
-                    </div>
-                  )
-                })
-              )}
-            </div>
+      {/* Grid (unlocks at s2-3) */}
+      {showGrid && (
+        <div className="grid-section">
+          <p className="grid-label">All 36 pairs — click a sum</p>
+          <div className="grid-6x6">
+            {Array.from({ length: 6 }, (_, i) =>
+              Array.from({ length: 6 }, (_, j) => {
+                const d1 = i + 1
+                const d2 = j + 1
+                const sum = d1 + d2
+                const isSelected = selectedSum === sum
+                return (
+                  <div
+                    key={`${d1}-${d2}`}
+                    className={`grid-cell ${isSelected ? 'selected' : ''}`}
+                    onClick={() =>
+                      setSelectedSum(selectedSum === sum ? null : sum)
+                    }
+                  >
+                    <span className="cell-text">{sum}</span>
+                  </div>
+                )
+              })
+            )}
           </div>
+        </div>
+      )}
 
-          {selectedSum !== null && (
-            <div className="sum-details">
-              <p>
-                Sum <strong>{selectedSum}</strong>: {getWaysForSum(selectedSum).length} ways
-              </p>
-              <p className="formula">
-                P({selectedSum}) = {getWaysForSum(selectedSum).length}/36 ≈{' '}
-                {(getWaysForSum(selectedSum).length / 36).toFixed(3)}
-              </p>
-            </div>
-          )}
+      {/* Sum details (from grid selection) */}
+      {selectedSum !== null && (
+        <div className="sum-details">
+          <p className="sum-count">
+            Sum <strong>{selectedSum}</strong>: {getWaysForSum(selectedSum).length} of 36
+          </p>
+          <p className="sum-freq">
+            {(getWaysForSum(selectedSum).length / 36).toFixed(3)}
+          </p>
         </div>
       )}
     </div>
