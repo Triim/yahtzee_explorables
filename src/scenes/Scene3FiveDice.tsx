@@ -1,29 +1,34 @@
 import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
-import { generateAllHands, multisetCount } from '@/engine'
+import { multisetCount } from '@/engine'
 import './FiveDiceModel.css'
 
-export function FiveDiceModel(_props: SceneModelProps) {
+export function FiveDiceModel({ activeStepId }: SceneModelProps) {
   const [hand, setHand] = useState<number[]>([1, 1, 2, 3, 5])
-  const [sorted, setSorted] = useState(true)
-  const [uniqueCount, setUniqueCount] = useState(252)
-
-  const allHands = generateAllHands()
+  const [sorted, setSorted] = useState(false)
+  const [showCollapse, setShowCollapse] = useState(false)
 
   const handleToggleSorted = () => {
     if (!sorted) {
       setHand([...hand].sort((a, b) => a - b))
+      setShowCollapse(true)
+      setTimeout(() => setShowCollapse(false), 800)
+    } else {
+      setHand([5, 3, 2, 1, 1])
     }
     setSorted(!sorted)
-    setUniqueCount(multisetCount())
   }
 
-  const displayHand = sorted ? hand : hand.slice().reverse()
+  const displayHand = sorted ? hand : [5, 3, 2, 1, 1]
+  const uniqueCount = multisetCount()
+  const showToggle = activeStepId && activeStepId.startsWith('s3-3')
+  const showCount = activeStepId && activeStepId.startsWith('s3-4')
 
   return (
     <div className="five-dice-model">
+      {/* Hand display (base) */}
       <div className="dice-visualization">
-        <div className="five-dice-display">
+        <div className={`five-dice-display ${showCollapse ? 'collapsing' : ''}`}>
           {displayHand.map((value, i) => (
             <div key={i} className="die-dot">
               {value}
@@ -32,35 +37,29 @@ export function FiveDiceModel(_props: SceneModelProps) {
         </div>
       </div>
 
+      {/* Ordered stat (always visible) */}
       <div className="stats-section">
         <p className="stat-item">
-          Possible rolls: <strong>6^5 = 7,776</strong>
-        </p>
-        <p className="stat-item">
-          Unique hands: <strong>{uniqueCount}</strong>
+          Ordered rolls: <strong>6<sup>5</sup> = 7,776</strong>
         </p>
       </div>
 
-      <button className="toggle-button" onClick={handleToggleSorted}>
-        {sorted ? 'Show unsorted' : 'Sort dice'}
-      </button>
+      {/* Toggle button (unlocks at s3-3) */}
+      {showToggle && (
+        <button className="toggle-button" onClick={handleToggleSorted}>
+          {sorted ? '→ Shuffle' : '→ Sort'}
+        </button>
+      )}
 
-      <p className="explanation">
-        Order doesn't matter — only which faces showed. Hand{' '}
-        <code>{displayHand.join(',')}</code> is one state, however shuffled.
-      </p>
-
-      <div className="all-hands-preview">
-        <p className="preview-label">252 unique multisets (sample):</p>
-        <div className="hand-grid">
-          {allHands.slice(0, 12).map((h, i) => (
-            <div key={i} className="hand-preview">
-              {h.join('')}
-            </div>
-          ))}
-          <div className="hand-preview">...</div>
+      {/* Unique count (unlocks at s3-4) */}
+      {showCount && (
+        <div className="stats-section collapse-reveal">
+          <p className="stat-item collapse-stat">
+            Multisets: <strong>{uniqueCount}</strong>
+          </p>
+          <p className="stat-note">7,776 → {uniqueCount} (order ignored)</p>
         </div>
-      </div>
+      )}
     </div>
   )
 }
