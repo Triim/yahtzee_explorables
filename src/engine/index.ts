@@ -66,3 +66,16 @@ export {
 
 // Oracle (precomputed DP values)
 export { initOracle, getOptimalExpectedScore, type Oracle } from './oracle'
+
+// Monte Carlo simulation
+export {
+  simulateGame,
+  runTournament,
+  scoreHistogram,
+  strategies,
+  type GameResult,
+  type MonteCarloStats,
+} from './montecarlo'
+
+// Worker hook (React)
+export { useMonteCarloWorker, type SimulationResult, type WorkerStats } from './useMonteCarloWorker'
