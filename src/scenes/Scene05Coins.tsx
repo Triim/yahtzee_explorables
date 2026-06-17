@@ -4,7 +4,7 @@ import { Histogram, RollButton } from '@/components'
 import { binomialDistribution } from '@/engine'
 import './CoinsModel.css'
 
-export function CoinsModel(_props: SceneModelProps) {
+export function CoinsModel({ activeStepId }: SceneModelProps) {
   const [coinStates, setCoinStates] = useState<boolean[]>([
     false,
     false,
@@ -12,48 +12,116 @@ export function CoinsModel(_props: SceneModelProps) {
     false,
     false,
   ])
-  const [rolls, setRolls] = useState(0)
+  const [tosses, setTosses] = useState<number[]>([]) // Empirical history
+  const [isTossing, setIsTossing] = useState(false)
 
   const handleToss = () => {
-    setCoinStates(Array.from({ length: 5 }, () => Math.random() > 0.5))
-    setRolls(rolls + 1)
+    setIsTossing(true)
+    const newStates = Array.from({ length: 5 }, () => Math.random() > 0.5)
+    setCoinStates(newStates)
+    const headsCount = newStates.filter((h) => h).length
+    setTimeout(() => {
+      setTosses([...tosses, headsCount])
+      setIsTossing(false)
+    }, 300)
   }
 
   const heads = coinStates.filter((h) => h).length
+  const showTheoryOverlay = activeStepId === 's05-4'
+  const showScoringPrompt = activeStepId === 's05-3'
+  const showThreshold = activeStepId === 's05-4'
 
-  // Binomial distribution for 5 tosses, p=0.5
-  const dist = binomialDistribution(5, 0.5)
-  const histData = new Map<number, number>()
+  // Empirical distribution from tosses
+  const empiricalData = new Map<number, number>()
   for (let i = 0; i <= 5; i++) {
-    histData.set(i, dist[i] || 0)
+    empiricalData.set(i, tosses.filter((h) => h === i).length)
   }
+
+  // Theory: binomial P(X=k)
+  const theory = binomialDistribution(5, 0.5)
+  const theoryData = new Map<number, number>()
+  for (let i = 0; i <= 5; i++) {
+    theoryData.set(i, theory[i] || 0)
+  }
+
+  // h* threshold: if heads worth 2×, tails worth 1×
+  // h* = S_tails / (S_heads + S_tails) = 1 / 3 ≈ 1.67 heads
+  const hThreshold = 1.67
 
   return (
     <div className="coins-model">
+      {/* Current toss display */}
       <div className="coins-display">
         {coinStates.map((isHeads, i) => (
-          <div key={i} className={`coin ${isHeads ? 'heads' : 'tails'}`}>
+          <div
+            key={i}
+            className={`coin ${isHeads ? 'heads' : 'tails'} ${isTossing ? 'tossing' : ''}`}
+          >
             {isHeads ? 'H' : 'T'}
           </div>
         ))}
       </div>
+
+      {/* Micro-label: heads/tails count */}
       <div className="coins-result">
         <p className="result-text">
           {heads} heads, {5 - heads} tails
         </p>
       </div>
-      <RollButton onRoll={handleToss} label="Toss 5 Coins" pulsing={rolls === 0} />
 
-      {rolls > 0 && (
-        <div className="coins-histogram">
+      {/* Toss button (always visible) */}
+      <RollButton
+        onRoll={handleToss}
+        label="Toss 5 Coins"
+        disabled={isTossing}
+        pulsing={tosses.length === 0}
+      />
+
+      {/* Empirical histogram (builds from tosses) */}
+      {tosses.length > 0 && (
+        <div className="coins-histogram empirical">
           <Histogram
-            data={histData}
-            title="Expected distribution (5 tosses, p=0.5)"
+            data={empiricalData}
+            title="Observed"
+            xLabel="# Heads"
+            yLabel="Count"
+            width={300}
+            height={180}
+          />
+        </div>
+      )}
+
+      {/* Theory overlay (unlocks at s05-4) */}
+      {showTheoryOverlay && tosses.length > 0 && (
+        <div className="coins-histogram theory-overlay">
+          <Histogram
+            data={theoryData}
+            title="Expected (binomial)"
             xLabel="# Heads"
             yLabel="P(X)"
-            width={350}
-            height={200}
+            width={300}
+            height={180}
           />
+        </div>
+      )}
+
+      {/* Scoring choice (unlocks at s05-3) */}
+      {showScoringPrompt && (
+        <div className="coins-scoring">
+          <p className="scoring-label">Heads worth 2×, tails worth 1×</p>
+          <p className="scoring-label">Current: {heads * 2} vs {(5 - heads) * 1}</p>
+        </div>
+      )}
+
+      {/* h* threshold readout (unlocks at s05-4) */}
+      {showThreshold && (
+        <div className="coins-threshold">
+          <p className="threshold-label">h* = {hThreshold.toFixed(2)}</p>
+          <p className="threshold-status">
+            {heads > hThreshold
+              ? '✓ Take box 1 (heads)'
+              : '✗ Take box 2 (reroll)'}
+          </p>
         </div>
       )}
     </div>

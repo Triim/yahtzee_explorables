@@ -39,6 +39,28 @@
   color: var(--accent);
 }
 
+.coin.tossing {
+  animation: coinFlip 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes coinFlip {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(20deg) scale(1.1);
+  }
+  100% {
+    transform: rotateY(0deg) rotateX(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin.tossing {
+    animation: none;
+  }
+}
+
 .coins-result {
   text-align: center;
 }
@@ -52,4 +74,81 @@
 .coins-histogram {
   width: 100%;
   max-width: 400px;
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
+}
+
+.coins-histogram.empirical {
+  animation: slideIn 0.5s ease-out;
+}
+
+.coins-histogram.theory-overlay {
+  margin-top: 1rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.coins-scoring {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: var(--accent-bg);
+  border-radius: 8px;
+  border: 1px solid var(--accent-border);
+  animation: slideIn 0.5s ease-out;
+}
+
+.scoring-label {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.coins-threshold {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  animation: slideIn 0.5s ease-out;
+}
+
+.threshold-label {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.threshold-status {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coins-histogram,
+  .coins-scoring,
+  .coins-threshold {
+    animation: none;
+  }
 }
