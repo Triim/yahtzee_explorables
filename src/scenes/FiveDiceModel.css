@@ -1,0 +1,121 @@
+.five-dice-model {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.dice-visualization {
+  text-align: center;
+}
+
+.five-dice-display {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.die-dot {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: var(--accent);
+  color: white;
+  border: 2px solid var(--accent);
+}
+
+.stats-section {
+  text-align: center;
+  padding: 1rem;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  min-width: 250px;
+}
+
+.stat-item {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.stat-item strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.toggle-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button:hover {
+  background: var(--accent-bg);
+}
+
+.explanation {
+  max-width: 400px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+code {
+  background: var(--code-bg);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: var(--text-h);
+}
+
+.all-hands-preview {
+  max-width: 400px;
+}
+
+.preview-label {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem 0;
+}
+
+.hand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 0.5rem;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+.hand-preview {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
