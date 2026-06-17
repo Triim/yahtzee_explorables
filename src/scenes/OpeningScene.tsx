@@ -19,7 +19,7 @@ export function HeroModel(_props: SceneModelProps) {
   return (
     <div className="hero-model">
       <div className="hero-die-container">
-        <Die value={dieValue} size={120} isRolling={isRolling} />
+        <Die value={dieValue} size={120} rolling={isRolling} />
       </div>
       <RollButton onRoll={handleRoll} label="Roll" pulsing={dieValue === 1} disabled={isRolling} />
     </div>

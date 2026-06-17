@@ -49,9 +49,9 @@ export function TwoDiceModel({ activeStepId }: SceneModelProps) {
       <div className="dice-display">
         {rolls.length > 0 ? (
           <>
-            <Die value={rolls[rolls.length - 1][0]} size={80} isRolling={isRolling} />
+            <Die value={rolls[rolls.length - 1][0]} size={80} rolling={isRolling} />
             <span className="plus">+</span>
-            <Die value={rolls[rolls.length - 1][1]} size={80} isRolling={isRolling} />
+            <Die value={rolls[rolls.length - 1][1]} size={80} rolling={isRolling} />
             <span className="equals">=</span>
             <span className="sum-display">{lastSum}</span>
           </>

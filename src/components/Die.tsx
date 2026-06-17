@@ -1,93 +1,94 @@
 import './Die.css'
 
+export type DieValue = 1 | 2 | 3 | 4 | 5 | 6
+
 interface DieProps {
-  value: number
-  size?: number
-  className?: string
+  value: number // 1..6 (clamped); typed loose so call sites can pass engine output
+  size?: number // px, default 64
+  held?: boolean // default false
+  rolling?: boolean // default false (drives the shake animation)
+  settling?: boolean // default false (drives the settle animation)
   onClick?: () => void
-  held?: boolean
-  isRolling?: boolean
+  className?: string
+}
+
+// Fixed 3×3 pip grid on the 0..100 viewBox.
+const PIP = {
+  TL: { cx: 28, cy: 28 },
+  TR: { cx: 72, cy: 28 },
+  ML: { cx: 28, cy: 50 },
+  MR: { cx: 72, cy: 50 },
+  BL: { cx: 28, cy: 72 },
+  BR: { cx: 72, cy: 72 },
+  C: { cx: 50, cy: 50 },
+} as const
+
+type PipKey = keyof typeof PIP
+
+const FACE_PIPS: Record<DieValue, PipKey[]> = {
+  1: ['C'],
+  2: ['TL', 'BR'],
+  3: ['TL', 'C', 'BR'],
+  4: ['TL', 'TR', 'BL', 'BR'],
+  5: ['TL', 'TR', 'C', 'BL', 'BR'],
+  6: ['TL', 'TR', 'ML', 'MR', 'BL', 'BR'],
 }
 
 export function Die({
   value,
-  size = 60,
-  className = '',
-  onClick,
+  size = 64,
   held = false,
-  isRolling = false,
+  rolling = false,
+  settling = false,
+  onClick,
+  className = '',
 }: DieProps) {
-  const dotSize = size / 10
-  const spacing = size / 6
+  const safeValue = (Math.max(1, Math.min(6, value)) as DieValue)
+  const pips = FACE_PIPS[safeValue]
 
-  // Generate dot positions for standard die face layouts
-  const getDots = (face: number): Array<{ x: number; y: number }> => {
-    const dots: Array<{ x: number; y: number }> = []
-    const offset = spacing
-
-    switch (face) {
-      case 1:
-        dots.push({ x: size / 2, y: size / 2 })
-        break
-      case 2:
-        dots.push({ x: offset, y: offset })
-        dots.push({ x: size - offset, y: size - offset })
-        break
-      case 3:
-        dots.push({ x: offset, y: offset })
-        dots.push({ x: size / 2, y: size / 2 })
-        dots.push({ x: size - offset, y: size - offset })
-        break
-      case 4:
-        dots.push({ x: offset, y: offset })
-        dots.push({ x: size - offset, y: offset })
-        dots.push({ x: offset, y: size - offset })
-        dots.push({ x: size - offset, y: size - offset })
-        break
-      case 5:
-        dots.push({ x: offset, y: offset })
-        dots.push({ x: size - offset, y: offset })
-        dots.push({ x: size / 2, y: size / 2 })
-        dots.push({ x: offset, y: size - offset })
-        dots.push({ x: size - offset, y: size - offset })
-        break
-      case 6:
-        for (let row = 0; row < 2; row++) {
-          for (let col = 0; col < 3; col++) {
-            dots.push({
-              x: offset + col * (size / 3),
-              y: offset + row * (size - 2 * offset),
-            })
-          }
-        }
-        break
-    }
-
-    return dots
-  }
-
-  const dots = getDots(Math.max(1, Math.min(6, value)))
+  const stateClass = rolling ? 'die--rolling' : settling ? 'die--settle' : ''
+  const heldClass = held ? 'die--held' : ''
+  const clickableClass = onClick ? 'die--clickable' : ''
 
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className={`die ${held ? 'held' : ''} ${isRolling ? 'rolling' : ''} ${className}`}
+      viewBox="0 0 100 100"
+      className={`die ${stateClass} ${heldClass} ${clickableClass} ${className}`}
       onClick={onClick}
       role="img"
-      aria-label={`Die showing ${value}`}
+      aria-label={`Die showing ${safeValue}`}
     >
-      <rect width={size} height={size} className="die-face" rx={size / 10} />
-      {dots.map((dot, i) => (
-        <circle
-          key={i}
-          cx={dot.x}
-          cy={dot.y}
-          r={dotSize}
-          className="die-dot"
+      {/* Held outline: a rounded-rect 3px outside the body in the accent color */}
+      {held && (
+        <rect
+          x={3}
+          y={3}
+          width={94}
+          height={94}
+          rx={21}
+          className="die-held-outline"
+          fill="none"
         />
-      ))}
+      )}
+
+      {/* Body */}
+      <rect
+        x={6}
+        y={6}
+        width={88}
+        height={88}
+        rx={18}
+        className="die-face"
+        strokeWidth={2}
+      />
+
+      {/* Pips */}
+      {pips.map((key) => {
+        const { cx, cy } = PIP[key]
+        return <circle key={key} cx={cx} cy={cy} r={8} className="die-pip" />
+      })}
     </svg>
   )
 }

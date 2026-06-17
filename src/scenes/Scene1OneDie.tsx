@@ -1,126 +1,224 @@
 import { useState } from 'react'
 import type { SceneModelProps } from '@/scaffolding'
-import { Die, RollButton, Histogram } from '@/components'
+import { Die, RollButton, useDieRoll, FACE_COLORS } from '@/components'
 import './OneDieModel.css'
+
+/* ----------------------------------------------------------------------------
+ * Scene 1 — One die. This model is the TEMPLATE every other scene copies:
+ *   - all visible tools are a pure function of the active step (reversible)
+ *   - the model carries NO narrative prose (only labels/axes/buttons)
+ *   - the histogram starts empty and builds from the reader's own rolls
+ * ------------------------------------------------------------------------- */
+
+function toolsFor(stepId: string | null) {
+  return {
+    showSlider: stepId === 's1-4' || stepId === 's1-5',
+    showOneSixthLine: stepId === 's1-5',
+    showPrediction: stepId === 's1-6' || stepId === 's1-7',
+  }
+}
+
+// Box–Muller standard normal.
+function randn(): number {
+  let u = 0
+  let v = 0
+  while (u === 0) u = Math.random()
+  while (v === 0) v = Math.random()
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
+}
+
+// Counts for N draws of a fair die via the normal approximation to
+// Binomial(N, 1/6): mean N/6, sd sqrt(N·(1/6)·(5/6)). Fluctuations grow like
+// √N, so the *relative* spread shrinks as N grows — the LLN flattening.
+function lawOfLargeNumbersCounts(n: number): number[] {
+  const p = 1 / 6
+  const mean = n * p
+  const sd = Math.sqrt(n * p * (1 - p))
+  const counts = [0, 0, 0, 0, 0, 0]
+  for (let i = 0; i < 6; i++) {
+    counts[i] = Math.max(0, Math.round(mean + randn() * sd))
+  }
+  return counts
+}
+
+// Slider position 0..1000 → N on a log scale 10 → 100000.
+const sliderToN = (t: number) => Math.round(10 ** (1 + (t / 1000) * 4))
+
+interface FaceHistogramProps {
+  counts: number[] // index 0..5 → faces 1..6
+  showOneSixthLine: boolean
+}
+
+function FaceHistogram({ counts, showOneSixthLine }: FaceHistogramProps) {
+  const baseline = 140
+  const maxBarHeight = 120
+  const total = counts.reduce((a, b) => a + b, 0)
+  const maxCount = Math.max(1, ...counts)
+  const barWidth = 36
+  const slot = 300 / 6
+
+  // y for the 1/6 reference: the count that equals total/6.
+  const oneSixthCount = total / 6
+  const lineY = baseline - (oneSixthCount / maxCount) * maxBarHeight
+
+  return (
+    <svg
+      viewBox="0 0 300 160"
+      className="face-histogram"
+      role="img"
+      aria-label="Histogram of die-face counts"
+    >
+      {counts.map((c, i) => {
+        const face = i + 1
+        const h = (c / maxCount) * maxBarHeight
+        const x = i * slot + (slot - barWidth) / 2
+        const y = baseline - h
+        return (
+          <g key={face}>
+            <rect
+              className="hist-bar"
+              x={x}
+              y={y}
+              width={barWidth}
+              height={h}
+              rx={3}
+              fill={FACE_COLORS[face]}
+            />
+            <text className="hist-x-label" x={x + barWidth / 2} y={154}>
+              {face}
+            </text>
+          </g>
+        )
+      })}
+
+      {/* 1/6 reference line (fades in only at S1.5) */}
+      {showOneSixthLine && total > 0 && (
+        <line
+          className="hist-onesixth"
+          x1={0}
+          x2={300}
+          y1={lineY}
+          y2={lineY}
+        />
+      )}
+
+      <text className="hist-y-label" x={4} y={12}>
+        frequency
+      </text>
+    </svg>
+  )
+}
 
 export function OneDieModel({ activeStepId }: SceneModelProps) {
   const [rolls, setRolls] = useState<number[]>([])
-  const [isRolling, setIsRolling] = useState(false)
-  const [prediction, setPrediction] = useState<number | null>(null)
-  const [stagedPrediction, setStagedPrediction] = useState(false)
+  const [sliderT, setSliderT] = useState(0)
+  const [predictionRoll, setPredictionRoll] = useState<number | null>(null)
+
+  const die = useDieRoll(1)
+
+  const { showSlider, showOneSixthLine, showPrediction } = toolsFor(activeStepId)
+
+  const rollsCapped = rolls.length >= 10
 
   const handleRoll = () => {
-    setIsRolling(true)
-    const newRoll = Math.floor(Math.random() * 6) + 1
-    setTimeout(() => {
-      setRolls([...rolls, newRoll])
-      setIsRolling(false)
-    }, 600)
+    if (rollsCapped) return
+    const result = Math.floor(Math.random() * 6) + 1 // honest
+    die.start(result)
+    setRolls((r) => [...r, result])
   }
 
-  const lastRoll = rolls.length > 0 ? rolls[rolls.length - 1] : 1
-
-  // Empirical histogram (only from real rolls, no synthetic)
-  const histData = new Map<number, number>()
-  for (let i = 1; i <= 6; i++) {
-    const count = rolls.filter((r) => r === i).length
-    const freq = rolls.length > 0 ? count / rolls.length : 0
-    histData.set(i, freq)
+  const handlePredict = () => {
+    const result = Math.floor(Math.random() * 6) + 1 // honest, never faked
+    die.start(result)
+    setPredictionRoll(result)
   }
 
-  // Theory overlay (1/6 line)
-  const theoryData = new Map<number, number>()
-  for (let i = 1; i <= 6; i++) {
-    theoryData.set(i, 1 / 6)
-  }
+  // Counts feeding the histogram: synthetic LLN distribution while the slider
+  // is active, otherwise the reader's real rolls.
+  const sliderN = sliderToN(sliderT)
+  const counts = showSlider
+    ? lawOfLargeNumbersCounts(sliderN)
+    : (() => {
+        const c = [0, 0, 0, 0, 0, 0]
+        rolls.forEach((r) => (c[r - 1] += 1))
+        return c
+      })()
 
-  const showSlider = activeStepId && activeStepId.startsWith('s1-4')
-  const showTheoryLine = activeStepId && activeStepId.startsWith('s1-5')
-  const showPredictionSetup = activeStepId && activeStepId.startsWith('s1-6')
+  // What face the die shows.
+  let dieValue = die.displayValue
+  if (showPrediction) {
+    dieValue = predictionRoll ?? 6 // staged streak rests on a six until predicted
+  } else if (!die.rolling && !die.settling) {
+    dieValue = rolls.length > 0 ? rolls[rolls.length - 1] : 1
+  }
 
   return (
     <div className="one-die-model">
-      {/* Die display (always visible) */}
+      {/* Staged six-streak strip (shown only during the prediction beat) */}
+      {showPrediction && (
+        <div className="streak-strip" aria-label="A run of sixes">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Die key={i} value={6} size={28} />
+          ))}
+          <span className="streak-arrow">→</span>
+        </div>
+      )}
+
       <div className="die-display">
-        <Die value={lastRoll} size={100} isRolling={isRolling} />
+        <Die
+          value={dieValue}
+          size={80}
+          rolling={die.rolling}
+          settling={die.settling}
+        />
       </div>
 
-      {/* Roll button for first 10 rolls (base affordance) */}
-      {rolls.length < 10 && (
+      {/* Base affordance: Roll (hidden while the slider is the focus) */}
+      {!showSlider && !showPrediction && (
         <div className="roll-section">
-          <p className="rolls-text">Rolls: {rolls.length} / 10</p>
+          <p className="rolls-text">{rolls.length} / 10</p>
           <RollButton
             onRoll={handleRoll}
             label="Roll"
-            disabled={isRolling}
+            disabled={rollsCapped || die.rolling}
             pulsing={rolls.length === 0}
           />
         </div>
       )}
 
-      {/* Empirical histogram (builds from real rolls) */}
-      {rolls.length > 0 && (
-        <div className="histogram-section empirical">
-          <Histogram
-            data={histData}
-            title="Observed"
-            xLabel="Face"
-            yLabel="Frequency"
-            width={300}
-            height={180}
-          />
-        </div>
-      )}
+      {/* Histogram: empty until the first roll, grows per roll */}
+      <div className="histogram-wrap">
+        <FaceHistogram counts={counts} showOneSixthLine={showOneSixthLine} />
+      </div>
 
-      {/* Theory line overlay (unlocks at s1-5) */}
-      {showTheoryLine && rolls.length > 0 && (
-        <div className="histogram-section theory-line">
-          <p className="theory-label">1/6 line (expected)</p>
-          <Histogram
-            data={theoryData}
-            title="Theory"
-            xLabel="Face"
-            yLabel="P(X)"
-            width={300}
-            height={180}
-          />
-        </div>
-      )}
-
-      {/* Slider (unlocks at s1-4) — manual for now, will be driven later */}
-      {showSlider && rolls.length > 0 && (
+      {/* Slider (S1.4 / S1.5) */}
+      {showSlider && (
         <div className="slider-control">
-          <p className="slider-label">More rolls to see LLN</p>
-          <p className="slider-note">(Scroll to see effect)</p>
+          <label htmlFor="lln-slider">rolls: {sliderN.toLocaleString()}</label>
+          <input
+            id="lln-slider"
+            type="range"
+            min={0}
+            max={1000}
+            value={sliderT}
+            onChange={(e) => setSliderT(parseInt(e.target.value, 10))}
+            className="slider"
+          />
         </div>
       )}
 
-      {/* Prediction setup (clearly staged at s1-6) */}
-      {showPredictionSetup && rolls.length >= 10 && prediction === null && (
-        <div className="prediction-section staged">
-          <p className="prediction-prompt">
-            <span className="prediction-label">[Demonstration]</span>
-            Six sixes. The next roll is...
-          </p>
-          <button
-            className="prediction-button"
-            onClick={() => {
-              setStagedPrediction(true)
-              setPrediction(Math.floor(Math.random() * 6) + 1)
-            }}
-          >
-            Show next
-          </button>
-        </div>
-      )}
-
-      {/* Prediction result */}
-      {prediction !== null && stagedPrediction && (
-        <div className="prediction-result">
-          <p className="prediction-outcome">{prediction}</p>
-          <p className="prediction-note">
-            The die doesn't remember. Rolls are independent.
-          </p>
+      {/* Prediction (S1.6 / S1.7) */}
+      {showPrediction && (
+        <div className="prediction-control">
+          {predictionRoll === null ? (
+            <div className="predict-buttons">
+              <button onClick={handlePredict}>1–5</button>
+              <button onClick={handlePredict}>6</button>
+              <button onClick={handlePredict}>can't tell</button>
+            </div>
+          ) : (
+            <p className="predict-result">{predictionRoll}</p>
+          )}
         </div>
       )}
     </div>

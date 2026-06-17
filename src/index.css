@@ -11,6 +11,19 @@
   --accent-border: rgba(99, 102, 241, 0.3);
   --code-bg: #f3f4f6;
 
+  /* Die tokens */
+  --die-face: #fdfdfd;
+  --die-edge: #d1d5db;
+  --die-pip: #1f2937;
+
+  /* One color per die face — shared by Die and every chart */
+  --face-1: #6366f1;
+  --face-2: #0ea5e9;
+  --face-3: #10b981;
+  --face-4: #f59e0b;
+  --face-5: #ef4444;
+  --face-6: #a855f7;
+
   /* Typography */
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'Courier New', monospace;
@@ -47,6 +60,11 @@
     --accent-bg: rgba(129, 140, 248, 0.1);
     --accent-border: rgba(129, 140, 248, 0.3);
     --code-bg: #1f2937;
+
+    /* Die tokens (dark) */
+    --die-face: #2a3441;
+    --die-edge: #4b5563;
+    --die-pip: #f3f4f6;
   }
 }
 

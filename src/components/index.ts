@@ -1,3 +1,6 @@
 export { Die } from './Die'
+export type { DieValue } from './Die'
 export { RollButton } from './RollButton'
 export { Histogram } from './Histogram'
+export { useDieRoll } from './useDieRoll'
+export { FACE_COLORS } from './faceColors'

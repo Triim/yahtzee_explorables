@@ -5,28 +5,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   padding: 2rem;
   overflow-y: auto;
 }
 
 .die-display {
-  animation: float 3s ease-in-out infinite;
+  display: flex;
+  justify-content: center;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Staged six-streak strip (prediction beat) */
+.streak-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.7;
+  animation: fadeIn 0.4s ease-out;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .die-display {
-    animation: none;
-  }
+.streak-arrow {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-left: 0.25rem;
 }
 
 .roll-section {
@@ -35,118 +36,97 @@
 
 .rolls-text {
   color: var(--text-muted);
-  margin: 0 0 1rem 0;
-  font-size: 0.95rem;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
 }
 
-.histogram-section {
+/* Histogram */
+.histogram-wrap {
   width: 100%;
-  max-width: 350px;
-  opacity: 1;
-  transition: opacity 0.4s ease-out;
+  max-width: 340px;
 }
 
-.histogram-section.empirical {
-  animation: slideIn 0.5s ease-out;
+.face-histogram {
+  width: 100%;
+  height: auto;
 }
 
-.histogram-section.theory-line {
-  margin-top: 1rem;
+.hist-bar {
+  transition: height 0.2s ease-out, y 0.2s ease-out;
+}
+
+.hist-x-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+}
+
+.hist-y-label {
+  font-size: 10px;
+  fill: var(--text-muted);
+}
+
+.hist-onesixth {
+  stroke: var(--text-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
   animation: fadeIn 0.5s ease-out;
 }
 
-.theory-label {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-align: center;
-}
-
+/* Slider */
 .slider-control {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   text-align: center;
-  padding: 1rem;
-  background: var(--accent-bg);
-  border-radius: 6px;
-  border: 1px solid var(--accent-border);
-  animation: slideIn 0.5s ease-out;
+  width: 100%;
+  max-width: 320px;
+  animation: slideIn 0.4s ease-out;
 }
 
-.slider-label {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.slider-note {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.prediction-section {
-  text-align: center;
-  padding: 1.5rem;
-  background: var(--panel-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  animation: slideIn 0.5s ease-out;
-}
-
-.prediction-section.staged {
-  border: 2px dashed var(--text-muted);
-}
-
-.prediction-prompt {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+.slider-control label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
   color: var(--text-color);
 }
 
-.prediction-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-right: 0.5rem;
+.slider {
+  width: 100%;
+  cursor: pointer;
 }
 
-.prediction-button {
-  padding: 0.75rem 1.5rem;
+/* Prediction */
+.prediction-control {
+  margin-top: 0.5rem;
+  animation: slideIn 0.4s ease-out;
+}
+
+.predict-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.predict-buttons button {
+  padding: 0.6rem 1rem;
   border: 2px solid var(--accent);
   border-radius: 6px;
   background: var(--bg);
   color: var(--accent);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
-.prediction-button:hover {
+.predict-buttons button:hover {
   background: var(--accent-bg);
 }
 
-.prediction-result {
-  text-align: center;
-  padding: 1.5rem;
-  background: var(--accent-bg);
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  animation: slideIn 0.5s ease-out;
-}
-
-.prediction-outcome {
+.predict-result {
   margin: 0;
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--accent);
-}
-
-.prediction-note {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  text-align: center;
 }
 
 @keyframes slideIn {
@@ -170,10 +150,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .histogram-section,
+  .streak-strip,
+  .hist-onesixth,
   .slider-control,
-  .prediction-section,
-  .prediction-result {
+  .prediction-control {
     animation: none;
+  }
+  .hist-bar {
+    transition: none;
   }
 }
