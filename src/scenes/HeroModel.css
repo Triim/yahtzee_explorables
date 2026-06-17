@@ -28,3 +28,9 @@
     transform: translateY(-10px);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-die-container {
+    animation: none;
+  }
+}
