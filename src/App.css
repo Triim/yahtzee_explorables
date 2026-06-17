@@ -8,7 +8,7 @@ body,
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, minmax(300px, 38rem)) 1fr;
+  grid-template-columns: minmax(320px, 38rem) minmax(0, 1fr);
   gap: clamp(24px, 5vw, 80px);
   align-items: start;
   min-height: 100vh;
@@ -63,6 +63,32 @@ body,
   /* Smooth crossfade on scene change */
   opacity: 1;
   transition: opacity 0.3s ease-out;
+}
+
+/* Visible fallback when a model throws or a scene id is unknown */
+.stage-error {
+  max-width: 420px;
+  padding: 1.25rem 1.5rem;
+  border: 2px solid #dc2626;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+}
+
+.stage-error strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #dc2626;
+}
+
+.stage-error pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.85rem;
+  font-family: var(--mono);
+  color: var(--text-color);
 }
 
 /* Tablet and smaller */
