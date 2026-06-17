@@ -1,142 +1,160 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
-import { Die, RollButton } from '@/components'
+import type { SceneModelProps, Scene } from '@/scaffolding'
+import { Die, RollButton, useDieRoll } from '@/components'
+import { rollToHand, scoreHand } from '@/engine'
+import type { Category } from '@/engine'
 import './FullTurnModel.css'
 
-export function FullTurnModel(_props: SceneModelProps) {
+const CATEGORIES: { id: Category; label: string; upper: boolean }[] = [
+  { id: 'ones', label: 'Ones', upper: true },
+  { id: 'twos', label: 'Twos', upper: true },
+  { id: 'threes', label: 'Threes', upper: true },
+  { id: 'fours', label: 'Fours', upper: true },
+  { id: 'fives', label: 'Fives', upper: true },
+  { id: 'sixes', label: 'Sixes', upper: true },
+  { id: 'three-of-a-kind', label: '3 of a kind', upper: false },
+  { id: 'four-of-a-kind', label: '4 of a kind', upper: false },
+  { id: 'full-house', label: 'Full house', upper: false },
+  { id: 'small-straight', label: 'Sm straight', upper: false },
+  { id: 'large-straight', label: 'Lg straight', upper: false },
+  { id: 'yahtzee', label: 'Yahtzee', upper: false },
+  { id: 'chance', label: 'Chance', upper: false },
+]
+
+export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
   const [rollNum, setRollNum] = useState(0)
   const [hand, setHand] = useState<number[]>([1, 2, 3, 4, 5])
   const [kept, setKept] = useState<boolean[]>([false, false, false, false, false])
-  const [selectedBox, setSelectedBox] = useState<string | null>(null)
+  const [upperSum, setUpperSum] = useState(0) // running upper-section total toward 63
+  const dice = [useDieRoll(1), useDieRoll(2), useDieRoll(3), useDieRoll(4), useDieRoll(5)]
 
   const handleRoll = () => {
-    if (rollNum < 3) {
-      const rolled = Array.from({ length: 5 }, (_, i) => {
-        if (kept[i]) return hand[i]
-        return Math.floor(Math.random() * 6) + 1
-      })
-      setHand(rolled)
-      setRollNum(rollNum + 1)
-    }
+    if (rollNum >= 3) return
+    const rolled = hand.map((v, i) => (kept[i] ? v : Math.floor(Math.random() * 6) + 1))
+    rolled.forEach((v, i) => {
+      if (!kept[i]) window.setTimeout(() => dice[i].start(v), i * 70)
+    })
+    setHand(rolled)
+    setRollNum(rollNum + 1)
+    satisfyGate?.() // gate: rolled in the turn
   }
 
   const toggleKeep = (idx: number) => {
-    if (rollNum < 3) {
-      setKept(kept.map((k, i) => (i === idx ? !k : k)))
-    }
+    if (rollNum > 0 && rollNum < 3) setKept(kept.map((k, i) => (i === idx ? !k : k)))
   }
 
-  const resetTurn = () => {
+  const handScores = (() => {
+    const h = rollToHand(hand as never)
+    const out = new Map<Category, number>()
+    for (const c of CATEGORIES) out.set(c.id, scoreHand(h, c.id))
+    return out
+  })()
+
+  const scoreBox = (cat: { id: Category; upper: boolean }) => {
+    const pts = handScores.get(cat.id) ?? 0
+    if (cat.upper) setUpperSum((s) => Math.min(63, s + pts))
+    // reset for a fresh turn
     setRollNum(0)
     setHand([1, 2, 3, 4, 5])
     setKept([false, false, false, false, false])
-    setSelectedBox(null)
+    satisfyGate?.() // gate: scored a box
   }
 
-  const categories = [
-    'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes',
-    'Three of a Kind', 'Four of a Kind', 'Full House',
-    'Small Straight', 'Large Straight', 'Yahtzee', 'Chance'
-  ]
+  const showScorecard = rollNum === 3 || activeStepId === 'B6.2'
+  const bonusReached = upperSum >= 63
+  const displayHand = hand.map((v, i) =>
+    dice[i].throwing ? dice[i].displayValue : v
+  )
 
   return (
     <div className="full-turn-model">
       <div className="turn-status">
         <p className="roll-counter">Roll {rollNum} / 3</p>
-        {rollNum === 3 && (
-          <p className="status-text">Final hand — pick a box to score.</p>
-        )}
       </div>
 
       <div className="dice-section">
         <div className="hand-display">
-          {hand.map((value, i) => (
-            <button
+          {displayHand.map((value, i) => (
+            <Die
               key={i}
-              className={`die-keeper ${kept[i] ? 'kept' : ''}`}
+              value={value}
+              size={56}
+              held={kept[i]}
+              throwing={dice[i].throwing}
               onClick={() => toggleKeep(i)}
-              disabled={rollNum === 3}
-            >
-              <Die value={value} size={60} />
-              {kept[i] && <div className="kept-label">kept</div>}
-            </button>
+            />
           ))}
         </div>
 
         {rollNum < 3 && (
           <RollButton
             onRoll={handleRoll}
-            label={`Roll ${rollNum === 0 ? '5 Dice' : 'Remaining'}`}
+            label={rollNum === 0 ? 'Roll' : 'Reroll loose'}
             pulsing={rollNum === 0}
           />
         )}
       </div>
 
-      {rollNum === 3 && (
+      {/* Bonus tracker: upper section toward 63 */}
+      <div className="bonus-tracker">
+        <div className="bonus-bar-bg">
+          <div
+            className={`bonus-bar ${bonusReached ? 'reached' : ''}`}
+            style={{ width: `${(upperSum / 63) * 100}%` }}
+          />
+        </div>
+        <p className="bonus-label">
+          Upper {upperSum} / 63 {bonusReached ? '· +35 ✓' : ''}
+        </p>
+      </div>
+
+      {showScorecard && (
         <div className="scorecard-section">
-          <p className="scorecard-label">Which box scores this hand?</p>
           <div className="scorecard-grid">
-            {categories.map((cat) => (
+            {CATEGORIES.map((cat) => (
               <button
-                key={cat}
-                className={`scorecard-box ${selectedBox === cat ? 'selected' : ''}`}
-                onClick={() => setSelectedBox(cat)}
+                key={cat.id}
+                className={`scorecard-box ${cat.upper ? 'upper' : ''}`}
+                onClick={() => scoreBox(cat)}
               >
-                <div className="box-name">{cat}</div>
-                <div className="box-value">{Math.floor(Math.random() * 20)}</div>
+                <div className="box-name">{cat.label}</div>
+                <div className="box-value">{handScores.get(cat.id) ?? 0}</div>
               </button>
             ))}
           </div>
-
-          {selectedBox && (
-            <p className="confirm-text">
-              Locked in: <strong>{selectedBox}</strong>. (13 boxes total; this one is gone forever.)
-            </p>
-          )}
-
-          <button className="reset-button" onClick={resetTurn}>
-            Start new turn
-          </button>
         </div>
       )}
     </div>
   )
 }
 
-export const scene6 = {
+export const scene6: Scene = {
   id: 'scene-6',
   model: FullTurnModel,
-  steps: [
+  beats: [
     {
-      id: 's6-1',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'fullturn' },
-      text: 'A real turn: three rolls, keep what you choose, score once at the end. Go.',
+      id: 'B6.1',
+      scene: 'scene-6',
+      prompt:
+        'A full turn by the rules: up to three rolls, keep what you like between them, then write down one category.',
+      payoff:
+        "There's a reward with a catch: the upper section pays +35 — but only if you reach 63 in it. That's exactly what six threes-of-a-kind add up to: $63 = 3\\cdot(1+2+\\dots+6)$.",
+      gate: { kind: 'roll', needed: 1 },
     },
     {
-      id: 's6-2',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'The box you pick is gone forever. Thirteen boxes, thirteen turns — each a one-way choice. The game is a sequence of irreversible decisions.',
+      id: 'B6.2',
+      scene: 'scene-6',
+      prompt:
+        'Now score a box — and watch the upper tracker. A player who grabs the most points every turn easily falls short of 63 and loses the whole bonus.',
+      payoff:
+        "Locally perfect, globally lost. And there's a second, bigger reward: +100 for every extra Yahtzee. Remember it — it comes back to do something spectacular.",
+      gate: { kind: 'choice' },
     },
     {
-      id: 's6-3',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Do you score when you\'re sure, or gamble on a reroll? Do you take a big box or guard a small one for later? Every move trades off now against later.',
-    },
-    {
-      id: 's6-4',
-      copyType: 'формула' as const,
-      register: 'free' as const,
-      text: 'The state is the scorecard: $\\text{state} \\in \\{0,1\\}^{13}$ (each box filled or open). From a state $s$, the value $V(s)$ is: the best expected score you can earn from that point on. It satisfies: $V(s) = \\max_{\\text{box}} \\left( \\text{score}(\\text{hand}, \\text{box}) + V(s\') \\right)$, where $s\'$ is the next state.',
-    },
-    {
-      id: 's6-5',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'That is a value — $V(\\text{state})$ — and it defines optimal play. This value function is computed by dynamic programming: work backwards from the end.',
+      id: 'B6.3',
+      scene: 'scene-6',
+      prompt:
+        "So the best move depends not only on what's in your hand now, but on what comes later. How do you choose the present for the sake of the future?",
     },
   ],
 }

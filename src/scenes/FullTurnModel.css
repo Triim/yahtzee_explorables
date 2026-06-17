@@ -77,6 +77,41 @@
   white-space: nowrap;
 }
 
+/* Bonus tracker toward 63 */
+.bonus-tracker {
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+}
+
+.bonus-bar-bg {
+  height: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.bonus-bar {
+  height: 100%;
+  background: var(--text-muted);
+  transition: width 0.4s ease, background 0.3s ease;
+}
+
+.bonus-bar.reached {
+  background: var(--accent);
+}
+
+.bonus-label {
+  margin: 0.4rem 0 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.scorecard-box.upper {
+  border-style: dashed;
+}
+
 .scorecard-section {
   width: 100%;
   max-width: 500px;
