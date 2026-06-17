@@ -1,0 +1,53 @@
+.histogram {
+  max-width: 100%;
+  height: auto;
+}
+
+.histogram-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--text-h);
+}
+
+.histogram-label {
+  font-size: 0.85rem;
+  fill: var(--text-muted);
+  text-anchor: middle;
+}
+
+.histogram-axis {
+  stroke: var(--border-color);
+  stroke-width: 1.5;
+}
+
+.histogram-grid {
+  stroke: var(--border-color);
+  stroke-width: 0.5;
+  stroke-dasharray: 2,2;
+  opacity: 0.5;
+}
+
+.histogram-bar {
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 0.5;
+  transition: fill 0.2s ease;
+}
+
+.histogram-bar:hover {
+  filter: brightness(1.2);
+}
+
+.histogram-tick {
+  font-size: 0.8rem;
+  fill: var(--text-muted);
+  text-anchor: middle;
+}
+
+.histogram-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}

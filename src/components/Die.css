@@ -1,0 +1,30 @@
+.die {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.die:hover {
+  filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
+}
+
+.die.held {
+  filter: drop-shadow(0 0 0 2px var(--accent));
+}
+
+.die-face {
+  fill: var(--bg);
+  stroke: var(--text-color);
+  stroke-width: 1.5;
+}
+
+.die-dot {
+  fill: var(--text-h);
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .die-face {
+    fill: var(--panel-bg);
+  }
+}
