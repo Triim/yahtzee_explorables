@@ -1,0 +1,5 @@
+export { SceneComponent } from './Scene'
+export { StepRenderer } from './StepRenderer'
+export { Formula } from './Formula'
+export { useActiveStep } from './useActiveStep'
+export type { Step, Scene, Directive, Register, SceneModelProps } from './types'
