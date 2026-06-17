@@ -130,7 +130,7 @@ export const scene6 = {
       id: 's6-4',
       copyType: 'формула' as const,
       register: 'free' as const,
-      text: 'The state of the game is the filled scorecard: which boxes are closed, which open. From that state, you can ask: what is the best expected score from here on?',
+      text: 'The state is the scorecard: $\\text{state} \\in \\{0,1\\}^{13}$ (each box filled or open). From a state $s$, the value $V(s)$ is: the best expected score you can earn from that point on. It satisfies: $V(s) = \\max_{\\text{box}} \\left( \\text{score}(\\text{hand}, \\text{box}) + V(s\') \\right)$, where $s\'$ is the next state.',
     },
     {
       id: 's6-5',

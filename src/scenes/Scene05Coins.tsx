@@ -87,7 +87,7 @@ export const scene05 = {
       id: 's05-4',
       copyType: 'формула' as const,
       register: 'free' as const,
-      text: 'Here the math has nowhere to hide — we can write it out in full. Take the expensive box only if its face came up more than a threshold: $h^* \\approx \\frac{S_1}{S_1+S_2}$. Below that, hold off. Sometimes it pays to refuse points now for something better later. Remember this — the whole game ahead is about it.',
+      text: 'Here the math has nowhere to hide — we can write it out in full. Let $h$ be the number of heads, and $S_1, S_2$ the two box scores. Take box 1 only if $h > h^* = \\dfrac{S_2}{S_1+S_2}$. Below that threshold, reroll and hope. Sometimes it pays to refuse points now for something better later. Remember this — the whole game ahead is about it.',
     },
     {
       id: 's05-5',

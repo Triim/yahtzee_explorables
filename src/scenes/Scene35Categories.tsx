@@ -61,7 +61,7 @@ export const scene35 = {
       copyType: 'определение' as const,
       register: 'free' as const,
       directive: { kind: 'activate' as const, model: 'categories' },
-      text: 'In Yahtzee a hand is worth something only if it forms a combination. And a combination is just a question you ask the hand: are there three of a kind here? four? a straight? a full house?',
+      text: 'In Yahtzee a hand is worth something only if it forms a combination. And a combination is just a question you ask the hand: are there three of a kind here? four? a straight? a full house? The bars show: out of 252 multisets, how many answer "yes" to each.',
     },
     {
       id: 's35-2',

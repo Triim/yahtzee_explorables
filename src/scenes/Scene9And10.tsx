@@ -114,7 +114,7 @@ export const scene9 = {
       id: 's9-3',
       copyType: 'определение' as const,
       register: 'free' as const,
-      text: 'This is why game theory and pure probability diverge. The number 160 is only good if it beats the other player. Alone it means nothing; with an opponent it means everything.',
+      text: 'This is why game theory and pure probability diverge. Value becomes: $V(\\text{hand}, \\text{opponent score}) = \\mathbb{1}[\\text{my score} > \\text{opponent}]$. A score of 160 is worth 1 if opponent has 150, and 0 if opponent has 170. The same hand, two different values.',
     },
     {
       id: 's9-4',
