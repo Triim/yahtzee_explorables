@@ -6,6 +6,7 @@ interface DieProps {
   className?: string
   onClick?: () => void
   held?: boolean
+  isRolling?: boolean
 }
 
 export function Die({
@@ -14,6 +15,7 @@ export function Die({
   className = '',
   onClick,
   held = false,
+  isRolling = false,
 }: DieProps) {
   const dotSize = size / 10
   const spacing = size / 6
@@ -71,7 +73,7 @@ export function Die({
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      className={`die ${held ? 'held' : ''} ${className}`}
+      className={`die ${held ? 'held' : ''} ${isRolling ? 'rolling' : ''} ${className}`}
       onClick={onClick}
       role="img"
       aria-label={`Die showing ${value}`}

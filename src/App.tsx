@@ -1,5 +1,8 @@
 import './App.css'
-import { SceneComponent } from '@/scaffolding'
+import { ActiveStepProvider } from '@/scaffolding/ActiveStepContext'
+import { useGlobalActiveStep } from '@/scaffolding/useGlobalActiveStep'
+import { StepTrack } from '@/scaffolding/StepTrack'
+import { ActiveSceneRenderer } from '@/scaffolding/ActiveSceneRenderer'
 import { openingScene } from '@/scenes/OpeningScene'
 import { scene0 } from '@/scenes/Scene0Intuition'
 import { scene05 } from '@/scenes/Scene05Coins'
@@ -13,24 +16,39 @@ import { scene7 } from '@/scenes/Scene7StateDP'
 import { scene8 } from '@/scenes/Scene8Strategies'
 import { scene9, scene10 } from '@/scenes/Scene9And10'
 
+const allScenes = [
+  openingScene,
+  scene0,
+  scene05,
+  scene1,
+  scene2,
+  scene3,
+  scene35,
+  scene4,
+  scene5,
+  scene6,
+  scene7,
+  scene8,
+  scene9,
+  scene10,
+]
+
+function AppContent() {
+  useGlobalActiveStep()
+
+  return (
+    <div className="layout">
+      <StepTrack scenes={allScenes} />
+      <ActiveSceneRenderer scenes={allScenes} />
+    </div>
+  )
+}
+
 function App() {
   return (
-    <main className="explorable-main">
-      <SceneComponent scene={openingScene} />
-      <SceneComponent scene={scene0} />
-      <SceneComponent scene={scene05} />
-      <SceneComponent scene={scene1} />
-      <SceneComponent scene={scene2} />
-      <SceneComponent scene={scene3} />
-      <SceneComponent scene={scene35} />
-      <SceneComponent scene={scene4} />
-      <SceneComponent scene={scene5} />
-      <SceneComponent scene={scene6} />
-      <SceneComponent scene={scene7} />
-      <SceneComponent scene={scene8} />
-      <SceneComponent scene={scene9} />
-      <SceneComponent scene={scene10} />
-    </main>
+    <ActiveStepProvider>
+      <AppContent />
+    </ActiveStepProvider>
   )
 }
 

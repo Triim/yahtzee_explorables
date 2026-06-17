@@ -5,19 +5,23 @@ import './HeroModel.css'
 
 export function HeroModel(_props: SceneModelProps) {
   const [dieValue, setDieValue] = useState(1)
+  const [isRolling, setIsRolling] = useState(false)
 
   const handleRoll = () => {
+    setIsRolling(true)
     const newValue = Math.floor(Math.random() * 6) + 1
-    setDieValue(newValue)
+    setTimeout(() => {
+      setDieValue(newValue)
+      setIsRolling(false)
+    }, 600)
   }
 
   return (
     <div className="hero-model">
       <div className="hero-die-container">
-        <Die value={dieValue} size={120} />
+        <Die value={dieValue} size={120} isRolling={isRolling} />
       </div>
-      <p className="hero-subtitle">A single die. Roll it.</p>
-      <RollButton onRoll={handleRoll} label="Roll" pulsing={dieValue === 1} />
+      <RollButton onRoll={handleRoll} label="Roll" pulsing={dieValue === 1} disabled={isRolling} />
     </div>
   )
 }

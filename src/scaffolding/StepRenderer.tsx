@@ -4,10 +4,9 @@ import './StepRenderer.css'
 
 interface StepRendererProps {
   step: Step
-  isActive: boolean
 }
 
-export function StepRenderer({ step, isActive }: StepRendererProps) {
+export function StepRenderer({ step }: StepRendererProps) {
   const renderContent = (text: string) => {
     const parts: React.ReactNode[] = []
 
@@ -56,11 +55,8 @@ export function StepRenderer({ step, isActive }: StepRendererProps) {
   }
 
   return (
-    <div
-      id={step.id}
-      className={`step step-${step.copyType} register-${step.register} ${isActive ? 'active' : ''}`}
-    >
-      <p className="step-content">{renderContent(step.text)}</p>
+    <div className={`step-content step-${step.copyType} register-${step.register}`}>
+      <p>{renderContent(step.text)}</p>
     </div>
   )
 }

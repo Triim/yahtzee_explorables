@@ -26,7 +26,6 @@ export function SceneComponent({ scene }: SceneProps) {
             <StepRenderer
               key={step.id}
               step={step}
-              isActive={step.id === activeStepId}
             />
           ))}
         </div>
