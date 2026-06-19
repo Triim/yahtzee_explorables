@@ -35,14 +35,16 @@ function HeroContent() {
 }
 
 /**
- * Full-screen title that is literally cut in half as the reader scrolls the
- * first viewport. Two identical copies of the hero are stacked, each clipped to
- * one half along the horizontal centerline (which runs through the title). On
- * scroll the top half slides up and the bottom half slides down, slicing the
- * text apart and uncovering the two-pane layout behind.
+ * Full-screen title cut along the vertical pane seam, in two scroll steps:
+ *   1st viewport of scroll — the LEFT half ("Пять") slides off to the left; the
+ *     right half ("кубиков") stays put.
+ *   2nd viewport of scroll — the RIGHT half slides off to the right, uncovering
+ *     the fixed model stage beneath it.
  *
- * Driven continuously by scroll position (0 → 1 over the first viewport height)
- * via a CSS custom property, so it stays in sync with native scrolling.
+ * Driven continuously by scroll position via two CSS custom properties (--pl
+ * for the left half over [0,H], --pr for the right half over [H,2H]), so it
+ * stays in sync with native scrolling. The hero spacer is 2×100vh tall to give
+ * the two steps room, and the first beat lands exactly as the right half clears.
  */
 export function HeroTitle() {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -52,10 +54,13 @@ export function HeroTitle() {
     const apply = () => {
       rafRef.current = null
       const h = window.innerHeight || 1
-      const p = Math.min(Math.max(window.scrollY / h, 0), 1)
-      rootRef.current?.style.setProperty('--p', String(p))
+      const y = window.scrollY
+      const pl = Math.min(Math.max(y / h, 0), 1) // step 1: left half
+      const pr = Math.min(Math.max((y - h) / h, 0), 1) // step 2: right half
       if (rootRef.current) {
-        rootRef.current.style.pointerEvents = p > 0.98 ? 'none' : ''
+        rootRef.current.style.setProperty('--pl', String(pl))
+        rootRef.current.style.setProperty('--pr', String(pr))
+        rootRef.current.style.pointerEvents = pr > 0.98 ? 'none' : ''
       }
     }
     const onScroll = () => {
@@ -73,7 +78,11 @@ export function HeroTitle() {
   }, [])
 
   return (
-    <div className="hero" ref={rootRef} style={{ ['--p' as string]: 0 }}>
+    <div
+      className="hero"
+      ref={rootRef}
+      style={{ ['--pl' as string]: 0, ['--pr' as string]: 0 }}
+    >
       <div className="hero-half hero-half--left" aria-hidden="true">
         <HeroContent />
       </div>

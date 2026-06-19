@@ -25,8 +25,10 @@ body,
   min-width: 360px;
 }
 
+/* Two viewport-heights: step 1 (left half leaves) + step 2 (right half leaves).
+   The first beat lands exactly as the right half clears. */
 .hero-spacer {
-  height: 100vh;
+  height: 200vh;
 }
 
 .track {
@@ -168,7 +170,8 @@ body,
   position: fixed;
   inset: 0;
   z-index: 4;
-  --p: 0;
+  --pl: 0;
+  --pr: 0;
   --split: 40%;
 }
 
@@ -179,16 +182,18 @@ body,
   will-change: transform;
 }
 
+/* Step 1: left half slides off left (--pl). */
 .hero-half--left {
   background: var(--bg);
   clip-path: inset(0 calc(100% - var(--split)) 0 0);
-  transform: translateX(calc(var(--p) * -100%));
+  transform: translateX(calc(var(--pl) * -100%));
 }
 
+/* Step 2: right half slides off right (--pr), uncovering the model stage. */
 .hero-half--right {
   background: var(--panel-bg);
   clip-path: inset(0 0 0 var(--split));
-  transform: translateX(calc(var(--p) * 100%));
+  transform: translateX(calc(var(--pr) * 100%));
 }
 
 /* Title centered on the seam so the vertical slice runs through the text. */

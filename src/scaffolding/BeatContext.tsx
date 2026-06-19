@@ -88,7 +88,14 @@ export function BeatProvider({
     [allBeats, activeBeatId]
   )
 
-  const revealed = activeSceneId ? revealedScenes.has(activeSceneId) : false
+  // The opening's model is uncovered by the hero's second cut, so it must be
+  // present on the stage from the start; later sections reveal on scroll.
+  const revealed =
+    activeSceneId === 'opening'
+      ? true
+      : activeSceneId
+        ? revealedScenes.has(activeSceneId)
+        : false
 
   return (
     <BeatContext.Provider
