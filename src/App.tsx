@@ -16,7 +16,7 @@ import { scene6 } from '@/scenes/Scene6Linearity'
 import { scene7 } from '@/scenes/Scene7Value'
 import { scene8 } from '@/scenes/Scene8Strategies'
 import { scene9 } from '@/scenes/Scene9Opponent'
-import { scene10 } from '@/scenes/Scene9And10'
+import { scene10 } from '@/scenes/Scene10Synthesis'
 
 /** Attach a menu label to the scene that opens each of the eleven sections. */
 function withMenu(scene: Scene, menuLabel: string): Scene {

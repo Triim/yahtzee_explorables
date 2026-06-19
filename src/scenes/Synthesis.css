@@ -1,0 +1,158 @@
+.sy-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.sy-model--empty {
+  min-height: 1px;
+}
+
+.sy-scores {
+  display: flex;
+  gap: 2rem;
+}
+
+.sy-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sy-score-num {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.sy-score:first-child .sy-score-num {
+  color: var(--accent);
+}
+
+.sy-score-name {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.sy-winbar {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 28px;
+  background: var(--border-color);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.sy-winbar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.sy-winbar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.sy-readout {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 28rem;
+}
+
+.sy-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.sy-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sy-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* B10.2 halves */
+.sy-halves {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.sy-half {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.sy-cone {
+  fill: var(--accent);
+}
+
+.sy-cone--wide {
+  opacity: 0.18;
+}
+
+.sy-cone--narrow {
+  opacity: 0.4;
+}
+
+.sy-half-label {
+  font-size: 0.85rem;
+  color: var(--text-h);
+}
+
+.sy-half-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* B10.3 capstone */
+.sy-capstone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sy-cap-num {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.sy-cap-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.sy-cap-edge {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--text-h);
+}
