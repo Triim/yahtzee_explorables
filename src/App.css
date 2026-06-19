@@ -157,7 +157,11 @@ body,
   transform: translateX(0);
 }
 
-/* ---- Hero: a full-screen curtain that splits on scroll ---- */
+/* ---- Hero: a full-screen title that is CUT in half on scroll ----
+   Two identical copies are stacked; each is clipped to one half along the
+   horizontal centerline (which runs through the title). On scroll the top half
+   slides up and the bottom half slides down — the text is sliced apart and the
+   layout behind is uncovered. */
 .hero {
   position: fixed;
   inset: 0;
@@ -165,57 +169,57 @@ body,
   --p: 0;
 }
 
-.hero-curtain {
+.hero-half {
   position: absolute;
-  top: 0;
-  height: 100vh;
+  inset: 0;
+  background: var(--bg);
+  overflow: hidden;
   will-change: transform;
 }
 
-.hero-curtain--left {
-  left: 0;
-  width: 40%;
-  background: var(--bg);
-  transform: translateX(calc(var(--p) * -100%));
+.hero-half--top {
+  clip-path: inset(0 0 50% 0);
+  transform: translateY(calc(var(--p) * -100%));
 }
 
-.hero-curtain--right {
-  right: 0;
-  width: 60%;
-  background: var(--panel-bg);
-  transform: translateX(calc(var(--p) * 100%));
+.hero-half--bottom {
+  clip-path: inset(50% 0 0 0);
+  transform: translateY(calc(var(--p) * 100%));
 }
 
-.hero-titles {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
-  pointer-events: none;
-  opacity: calc(1 - var(--p) * 1.8);
-}
-
+/* Title centered exactly on the cut line so the slice runs through the text. */
 .hero-title {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  margin: 0;
   font-size: clamp(3rem, 8vw, 5.5rem);
   line-height: 1.05;
-  margin: 0 0 1.5rem 0;
   color: var(--text-h);
   letter-spacing: -0.02em;
 }
 
 .hero-sub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 3.75rem;
+  width: min(32rem, 80vw);
+  text-align: center;
   font-size: 1.2rem;
   line-height: 1.6;
   color: var(--text-muted);
-  margin: 0 auto 2.5rem auto;
-  max-width: 32rem;
 }
 
 .hero-arrow {
+  position: absolute;
+  bottom: 11vh;
+  left: 50%;
+  transform: translateX(-50%);
   pointer-events: auto;
   background: none;
   border: none;
@@ -231,10 +235,10 @@ body,
 @keyframes heroBob {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
   50% {
-    transform: translateY(8px);
+    transform: translate(-50%, 8px);
   }
 }
 
