@@ -56,7 +56,7 @@ function NormalCurve({ mu, sigma, threshold }: { mu: number; sigma: number; thre
 
 export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
-  const [played, setPlayed] = useState(false)
+  const [duel, setDuel] = useState<[number, number] | null>(null)
   const [winObjective, setWinObjective] = useState(false)
   const [risk, setRisk] = useState(20)
   const [remaining, setRemaining] = useState(13)
@@ -70,8 +70,8 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
 
   // B9.1 — two players side by side
   if (beat === 'B9.1') {
-    const mine = played ? 180 + ((Math.random() * 90) | 0) : null
-    const theirs = played ? 180 + ((Math.random() * 90) | 0) : null
+    const mine = duel?.[0] ?? null
+    const theirs = duel?.[1] ?? null
     return (
       <div className="op-model">
         <div className="op-duel">
@@ -84,7 +84,13 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
             <span className="op-player-name">соперник</span>
           </div>
         </div>
-        <button className="op-btn" onClick={() => { setPlayed(true); satisfyGate?.() }}>
+        <button
+          className="op-btn"
+          onClick={() => {
+            setDuel([180 + ((Math.random() * 90) | 0), 180 + ((Math.random() * 90) | 0)])
+            satisfyGate?.()
+          }}
+        >
           сыграть ход рядом
         </button>
         <p className="op-note">его случай и твой — независимы</p>

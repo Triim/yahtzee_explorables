@@ -42,6 +42,8 @@ export function RerollModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [throwing, setThrowing] = useState(false)
   const [left, setLeft] = useState(2)
 
+  // Reset the hand when the active beat changes (sync to a prop-like value).
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const init = INIT[beat]
     if (init) {
@@ -51,6 +53,7 @@ export function RerollModel({ activeBeatId, satisfyGate }: SceneModelProps) {
       setLeft(2)
     }
   }, [beat])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const toggle = (i: number) => {
     if (throwing) return

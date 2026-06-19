@@ -24,6 +24,30 @@ function fmt(n: number): string {
   return n.toLocaleString('ru-RU')
 }
 
+/* Honest simulations, run only from event handlers (never during render). */
+function simCoin(t: number) {
+  const n = logN(t)
+  let heads = 0
+  for (let i = 0; i < n; i++) if (Math.random() < 0.5) heads++
+  return { n, heads, tails: n - heads }
+}
+function simDie(t: number) {
+  const n = logN(t)
+  const counts = [0, 0, 0, 0, 0, 0]
+  for (let i = 0; i < n; i++) counts[(Math.random() * 6) | 0]++
+  return { n, counts }
+}
+function simBell(t: number) {
+  const n = logN(t)
+  const hist = new Map<number, number>()
+  for (let s = 2; s <= 12; s++) hist.set(s, 0)
+  for (let i = 0; i < n; i++) {
+    const s = ((Math.random() * 6) | 0) + ((Math.random() * 6) | 0) + 2
+    hist.set(s, (hist.get(s) ?? 0) + 1)
+  }
+  return { n, hist }
+}
+
 /* ---- Coin ---- */
 function Coin({ heads, flipping }: { heads: boolean; flipping: boolean }) {
   return (
@@ -210,33 +234,17 @@ export function ProbabilityModel({ activeBeatId, satisfyGate }: SceneModelProps)
     satisfyGate?.()
   }
 
-  const coinFraction = useMemo(() => {
-    const n = logN(coinSlider)
-    let heads = 0
-    for (let i = 0; i < n; i++) if (Math.random() < 0.5) heads++
-    return { n, heads, tails: n - heads }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coinSlider])
-
-  const dieFaces = useMemo(() => {
-    const n = logN(dieSlider)
-    const counts = [0, 0, 0, 0, 0, 0]
-    for (let i = 0; i < n; i++) counts[(Math.random() * 6) | 0]++
-    return { n, counts }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dieSlider])
-
-  const bell = useMemo(() => {
-    const n = bellSlider === 0 ? 0 : logN(bellSlider)
-    const hist = new Map<number, number>()
-    for (let s = 2; s <= 12; s++) hist.set(s, 0)
-    for (let i = 0; i < n; i++) {
-      const s = ((Math.random() * 6) | 0) + ((Math.random() * 6) | 0) + 2
-      hist.set(s, (hist.get(s) ?? 0) + 1)
-    }
-    return { n, hist }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bellSlider])
+  // Simulations are stored in state and recomputed in the slider handlers
+  // (never during render — Math.random must not run while rendering).
+  const [coinFraction, setCoinFraction] = useState({ n: 0, heads: 0, tails: 0 })
+  const [dieFaces, setDieFaces] = useState<{ n: number; counts: number[] }>({
+    n: 0,
+    counts: [0, 0, 0, 0, 0, 0],
+  })
+  const [bell, setBell] = useState<{ n: number; hist: Map<number, number> }>({
+    n: 0,
+    hist: new Map(),
+  })
 
   const tossTree = () => {
     setTreePath([Math.random() < 0.5, Math.random() < 0.5])
@@ -310,7 +318,9 @@ export function ProbabilityModel({ activeBeatId, satisfyGate }: SceneModelProps)
               max={100}
               value={coinSlider}
               onChange={(e) => {
-                setCoinSlider(+e.target.value)
+                const t = +e.target.value
+                setCoinSlider(t)
+                setCoinFraction(simCoin(t))
                 satisfyGate?.()
               }}
               className="prob-slider"
@@ -373,7 +383,9 @@ export function ProbabilityModel({ activeBeatId, satisfyGate }: SceneModelProps)
               max={100}
               value={dieSlider}
               onChange={(e) => {
-                setDieSlider(+e.target.value)
+                const t = +e.target.value
+                setDieSlider(t)
+                setDieFaces(simDie(t))
                 satisfyGate?.()
               }}
               className="prob-slider"
@@ -450,7 +462,9 @@ export function ProbabilityModel({ activeBeatId, satisfyGate }: SceneModelProps)
               max={100}
               value={bellSlider}
               onChange={(e) => {
-                setBellSlider(+e.target.value)
+                const t = +e.target.value
+                setBellSlider(t)
+                setBell(simBell(t))
                 satisfyGate?.()
               }}
               className="prob-slider"

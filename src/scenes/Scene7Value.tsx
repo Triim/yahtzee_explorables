@@ -44,7 +44,8 @@ export function ValueModel({ activeBeatId, satisfyGate }: SceneModelProps) {
                 if (beat !== 'B7.1') return
                 setClosed((c) => {
                   const n = new Set(c)
-                  n.has(i) ? n.delete(i) : n.add(i)
+                  if (n.has(i)) n.delete(i)
+                  else n.add(i)
                   if (n.size >= 2) satisfyGate?.()
                   return n
                 })
