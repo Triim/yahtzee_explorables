@@ -27,6 +27,7 @@ export function useActiveBeat() {
 
     sections.forEach((el) => {
       const rect = el.getBoundingClientRect()
+      if (rect.height === 0) return // skip collapsed (gated-locked) beats
       const center = rect.top + rect.height / 2
       const distance = Math.abs(center - viewportCenter)
       if (distance < closestDistance) {

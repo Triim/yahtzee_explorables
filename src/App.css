@@ -25,14 +25,27 @@ body,
   min-width: 360px;
 }
 
-/* Two viewport-heights: step 1 (left half leaves) + step 2 (right half leaves).
-   The first beat lands exactly as the right half clears. */
-.hero-spacer {
-  height: 200vh;
-}
-
 .track {
   position: relative;
+}
+
+/* The opening beat is a tall section whose text is pinned (sticky) at the
+   viewport center, so it stays in place behind the hero while the two cover
+   halves lift away in turn. ~3 viewports give room for both steps + reading. */
+.track > .beat:first-child {
+  min-height: 300vh;
+  display: block;
+  padding: 0;
+}
+
+.track > .beat:first-child .beat-inner {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem 2.5rem;
 }
 
 /* ---- Beats: one viewport each, centered ---- */
@@ -182,18 +195,18 @@ body,
   will-change: transform;
 }
 
-/* Step 1: left half slides off left (--pl). */
+/* Step 1: left half lifts UP (--pl), revealing the first beat's text. */
 .hero-half--left {
   background: var(--bg);
   clip-path: inset(0 calc(100% - var(--split)) 0 0);
-  transform: translateX(calc(var(--pl) * -100%));
+  transform: translateY(calc(var(--pl) * -100%));
 }
 
-/* Step 2: right half slides off right (--pr), uncovering the model stage. */
+/* Step 2: right half lifts UP (--pr), uncovering the model stage. */
 .hero-half--right {
   background: var(--panel-bg);
   clip-path: inset(0 0 0 var(--split));
-  transform: translateX(calc(var(--pr) * 100%));
+  transform: translateY(calc(var(--pr) * -100%));
 }
 
 /* Title centered on the seam so the vertical slice runs through the text. */

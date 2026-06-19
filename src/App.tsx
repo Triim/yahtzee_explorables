@@ -53,7 +53,6 @@ function AppContent() {
 
       {/* Left reading column scrolls; the page provides the scroll. */}
       <main className="reader">
-        <div className="hero-spacer" aria-hidden="true" />
         <BeatTrack />
       </main>
 

@@ -35,16 +35,16 @@ function HeroContent() {
 }
 
 /**
- * Full-screen title cut along the vertical pane seam, in two scroll steps:
- *   1st viewport of scroll — the LEFT half ("Пять") slides off to the left; the
- *     right half ("кубиков") stays put.
- *   2nd viewport of scroll — the RIGHT half slides off to the right, uncovering
- *     the fixed model stage beneath it.
+ * Full-screen title cut along the vertical pane seam. The two halves are covers
+ * that lift straight UP in two scroll steps, uncovering what sits behind them:
+ *   1st viewport of scroll — the LEFT half ("Пять") lifts up, revealing the
+ *     first beat's text (pinned in the left column beneath it).
+ *   2nd viewport of scroll — the RIGHT half ("кубиков") lifts up, revealing the
+ *     fixed model stage beneath it.
  *
  * Driven continuously by scroll position via two CSS custom properties (--pl
  * for the left half over [0,H], --pr for the right half over [H,2H]), so it
- * stays in sync with native scrolling. The hero spacer is 2×100vh tall to give
- * the two steps room, and the first beat lands exactly as the right half clears.
+ * stays in sync with native scrolling.
  */
 export function HeroTitle() {
   const rootRef = useRef<HTMLDivElement | null>(null)
