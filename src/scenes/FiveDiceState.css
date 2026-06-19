@@ -1,0 +1,85 @@
+.fds-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 440px;
+}
+
+.fds-model--empty {
+  min-height: 1px;
+}
+
+.fds-hand {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fds-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.8rem 1.4rem;
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.fds-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.fds-btn--on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.fds-count,
+.fds-note {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.fds-count strong {
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+
+.fds-cloud {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: transform 0.4s ease;
+}
+
+.fds-cloud[data-collapsed='true'] {
+  transform: scale(1.05);
+}
+
+.fds-bignum {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.fds-cloud-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fds-formula {
+  color: var(--text-color);
+}

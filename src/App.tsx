@@ -8,7 +8,7 @@ import { HeroTitle } from '@/scaffolding/HeroTitle'
 import { NavMenu } from '@/scaffolding/NavMenu'
 import { openingScene } from '@/scenes/OpeningScene'
 import { scene1 } from '@/scenes/Scene1Probability'
-import { scene3 } from '@/scenes/Scene3FiveDice'
+import { scene2 } from '@/scenes/Scene2FiveDiceState'
 import { scene35 } from '@/scenes/Scene35Categories'
 import { scene4, scene5 } from '@/scenes/Scene4And5'
 import { scene6 } from '@/scenes/Scene6FullTurn'
@@ -24,7 +24,7 @@ function withMenu(scene: Scene, menuLabel: string): Scene {
 const allScenes: Scene[] = [
   withMenu(openingScene, 'Введение'),
   withMenu(scene1, '1 · Вероятность'),
-  withMenu(scene3, '2 · Пять кубиков'),
+  withMenu(scene2, '2 · Пять кубиков'),
   withMenu(scene35, '3 · Правила и комбинации'),
   withMenu(scene4, '4 · Переброс'),
   withMenu(scene5, '5 · Случайная величина'),
