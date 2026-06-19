@@ -1,0 +1,135 @@
+.op-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.op-model--empty {
+  min-height: 1px;
+}
+
+.op-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.op-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.op-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 28rem;
+}
+
+.op-readout {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.op-duel {
+  display: flex;
+  gap: 2rem;
+}
+
+.op-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.op-player-num {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.op-player:first-child .op-player-num {
+  color: var(--accent);
+}
+
+.op-player-name {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.op-toggle {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.op-toggle--win {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.op-move {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.op-move strong {
+  color: var(--text-h);
+}
+
+/* normal curve */
+.op-line {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.op-area {
+  fill: var(--accent);
+  opacity: 0.22;
+}
+
+.op-threshold {
+  stroke: #ef4444;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+
+.op-threshold-label {
+  fill: #ef4444;
+  font-size: 11px;
+}
+
+.op-slider {
+  width: 100%;
+  max-width: 320px;
+  accent-color: var(--accent);
+}
+
+/* funnel */
+.op-funnel-cone {
+  fill: var(--accent);
+  opacity: 0.15;
+}
+
+.op-funnel-now {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
