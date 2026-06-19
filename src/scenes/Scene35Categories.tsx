@@ -12,10 +12,10 @@ const CATEGORIES = [
   'yahtzee',
 ] as const
 
-export function CategoriesModel({ activeStepId, satisfyGate }: SceneModelProps) {
+export function CategoriesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [threeRolls, setThreeRolls] = useState(false)
 
-  // Real one-roll probability per category over all 252 multisets.
+  // Реальная вероятность для каждой категории за один бросок по всем 252 мультимножествам.
   const oneRollP = useMemo(() => {
     const hands = generateAllHands()
     const out: Record<string, number> = {}
@@ -29,14 +29,14 @@ export function CategoriesModel({ activeStepId, satisfyGate }: SceneModelProps) 
     return out
   }, [])
 
-  const showToggle = activeStepId === 'B35.2' || activeStepId === 'B35.3'
+  const showToggle = activeBeatId === 'B35.2' || activeBeatId === 'B35.3'
 
   const toggle = () => {
     setThreeRolls((v) => !v)
-    satisfyGate?.() // gate: toggled roll mode
+    satisfyGate?.() // гейт: переключить режим броска
   }
 
-  // Honest: probability of the category in at least one of 3 independent rolls.
+  // Честно: вероятность категории хотя бы в одном из 3 независимых бросков.
   const probFor = (cat: string) =>
     threeRolls ? 1 - (1 - oneRollP[cat]) ** 3 : oneRollP[cat]
 
@@ -62,7 +62,7 @@ export function CategoriesModel({ activeStepId, satisfyGate }: SceneModelProps) 
 
       {showToggle && (
         <button className="rollmode-toggle" onClick={toggle}>
-          {threeRolls ? '1 roll' : '3 rolls'}
+          {threeRolls ? '1 бросок' : '3 броска'}
         </button>
       )}
     </div>
@@ -77,22 +77,21 @@ export const scene35: Scene = {
       id: 'B35.1',
       scene: 'scene-35',
       prompt:
-        'A combination is just a question you ask the hand: three of a kind? a straight? a full house? The bars show how many of the 252 hands answer "yes" — on a single roll.',
+        'Комбинация — это просто вопрос к руке: есть ли здесь три одинаковых? стрит? фулл-хаус? Столбцы показывают, сколько из 252 рук отвечают "да" — за один бросок.',
     },
     {
       id: 'B35.2',
       scene: 'scene-35',
-      prompt:
-        "But you don't get one roll — you get three. Switch it on.",
+      prompt: 'Но у вас не один бросок, а три. Включите этот режим.',
       payoff:
-        'The odds jump. Four of a kind beats a small straight; Yahtzee stays rarest by an order of magnitude. Rerolls change the whole picture — the nearly impossible becomes real.',
+        'Шансы взлетают. Каре обгоняет малый стрит; Yahtzee остаётся редчайшей комбинацией. Перебросы меняют всю картину — почти невозможное становится реальным.',
       gate: { kind: 'toggle' },
     },
     {
       id: 'B35.3',
       scene: 'scene-35',
       prompt:
-        '"Likelier" still isn\'t "better." Before we price combinations against each other, settle the reroll itself: what\'s even worth keeping?',
+        '"Более вероятно" ещё не значит "лучше". Прежде чем оценивать комбинации друг против друга, разберёмся с самим перебросом: что вообще стоит оставлять?',
     },
   ],
 }

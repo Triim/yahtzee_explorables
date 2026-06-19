@@ -28,7 +28,7 @@ interface HoldRerollProps extends SceneModelProps {
   mode: 'conditional' | 'ev'
 }
 
-function HoldReroll({ activeStepId, satisfyGate, mode }: HoldRerollProps) {
+function HoldReroll({ activeBeatId, satisfyGate, mode }: HoldRerollProps) {
   const [hand, setHand] = useState<number[]>(START_HAND)
   const [held, setHeld] = useState<boolean[]>([true, true, false, false, false])
 
@@ -36,21 +36,21 @@ function HoldReroll({ activeStepId, satisfyGate, mode }: HoldRerollProps) {
 
   const toggleHold = (i: number) => {
     setHeld((h) => h.map((v, j) => (j === i ? !v : v)))
-    satisfyGate?.() // gate: hold/release a die
+    satisfyGate?.() // гейт: оставить/отпустить кость
   }
 
   const reroll = () => {
-    setHand((h) => h.map((v, i) => (held[i] ? v : rollFace()))) // honest reroll
+    setHand((h) => h.map((v, i) => (held[i] ? v : rollFace()))) // честный переброс
   }
 
-  // Conditional sum distribution (Scene 4)
+  // Условное распределение суммы (Сцена 4)
   const sums = useMemo(
     () => (mode === 'conditional' ? sumDistribution(kept) : new Map<number, number>()),
     [mode, kept.join(',')]
   )
   const maxSumProb = Math.max(0.0001, ...Array.from(sums.values()))
 
-  // EV per category (Scene 5)
+  // МО для каждой категории (Сцена 5)
   const evs = useMemo(
     () => (mode === 'ev' ? evForAllCategories(kept) : new Map<Category, number>()),
     [mode, kept.join(',')]
@@ -60,9 +60,9 @@ function HoldReroll({ activeStepId, satisfyGate, mode }: HoldRerollProps) {
     .slice(0, 6)
   const maxEv = Math.max(0.0001, ...evList.map(([, v]) => v))
 
-  const showDist = mode === 'conditional' && activeStepId !== 'B4.1-pre'
+  const showDist = mode === 'conditional' && activeBeatId !== 'B4.1-pre'
   const showEv =
-    mode === 'ev' && (activeStepId === 'B5.2' || activeStepId === 'B5.3')
+    mode === 'ev' && (activeBeatId === 'B5.2' || activeBeatId === 'B5.3')
 
   return (
     <div className="holdreroll-model">
@@ -79,14 +79,14 @@ function HoldReroll({ activeStepId, satisfyGate, mode }: HoldRerollProps) {
       </div>
 
       <button className="hr-reroll" onClick={reroll}>
-        Reroll loose dice
+        Перебросить свободные
       </button>
 
-      {/* Scene 4: conditional distribution of the resulting sum */}
+      {/* Сцена 4: условное распределение итоговой суммы */}
       {showDist && (
         <div className="hr-dist">
-          <p className="hr-dist-label">P(sum | kept)</p>
-          <svg viewBox="0 0 320 140" className="hr-dist-svg" role="img" aria-label="Conditional sum distribution">
+          <p className="hr-dist-label">P(сумма | оставленные)</p>
+          <svg viewBox="0 0 320 140" className="hr-dist-svg" role="img" aria-label="Условное распределение суммы">
             {Array.from(sums.entries())
               .sort((a, b) => a[0] - b[0])
               .map(([s, p]) => {
@@ -111,7 +111,7 @@ function HoldReroll({ activeStepId, satisfyGate, mode }: HoldRerollProps) {
         </div>
       )}
 
-      {/* Scene 5: EV per category, best highlighted */}
+      {/* Сцена 5: МО для каждой категории, лучшее подсвечено */}
       {showEv && (
         <div className="hr-ev">
           {evList.map(([cat, v], idx) => (
@@ -144,22 +144,22 @@ export const scene4: Scene = {
     {
       id: 'B4.1',
       scene: 'scene-4',
-      prompt: "Here's a hand. Click the dice you want to keep — the rest reroll.",
+      prompt: 'Вот рука. Кликните по костям, которые хотите оставить — остальные перебросятся.',
       payoff:
-        'The moment you keep something, the future stops being blind chance. This is conditional probability — the distribution of a future given a present: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$. Change what you keep and the whole curve shifts.',
+        'Как только вы что-то оставляете, будущее перестаёт быть слепым случаем. Это условная вероятность — распределение будущего при заданном настоящем: $P(B\\mid A)=\\dfrac{P(A\\cap B)}{P(A)}$. Измените то, что оставляете, и вся кривая сместится.',
       gate: { kind: 'hold' },
     },
     {
       id: 'B4.2',
       scene: 'scene-4',
       prompt:
-        'Under the hood each reroll is a step along a small chain: the value of what you hold is built from the values of what could arrive — $\\text{keep}[K]=\\frac{1}{6}\\sum_d \\text{keep}[K\\cup\\{d\\}]$.',
+        'Под капотом каждый переброс — это шаг по небольшой цепочке: ценность того, что вы держите, строится из ценностей того, что может прийти — $\\text{keep}[K]=\\frac{1}{6}\\sum_d \\text{keep}[K\\cup\\{d\\}]$.',
     },
     {
       id: 'B4.3',
       scene: 'scene-4',
       prompt:
-        "We have the distribution. But which choice is better — it won't say. We have no goal yet to choose toward.",
+        'У нас есть распределение. Но какой выбор лучше — оно не скажет. У нас пока нет цели, к которой можно было бы выбирать.',
     },
   ],
 }
@@ -172,22 +172,22 @@ export const scene5: Scene = {
       id: 'B5.1',
       scene: 'scene-5',
       prompt:
-        'Give the hand a price: every hand turns into points by a category\'s rule, so points are a function of the hand — $\\text{score}=f(\\text{hand})$.',
+        'Назначим руке цену: каждая рука превращается в очки по правилу категории, так что очки — это функция от руки: $\\text{очки}=f(\\text{рука})$.',
     },
     {
       id: 'B5.2',
       scene: 'scene-5',
       prompt:
-        "You're holding a fat six — surely that's the one to protect. Try it. Then try keeping something else and watch the averages.",
+        'Вы держите жирную шестёрку — уж её-то точно надо защищать. Попробуйте. А затем попробуйте оставить что-то другое и посмотрите на средние значения.',
       payoff:
-        'We compare not probabilities but the average haul: the expected value $E[X]=\\sum_x x\\,P(X=x)$. Again and again the "obvious" move loses to the unobvious one. The eye deceives; the number doesn\'t.',
+        'Мы сравниваем не вероятности, а средний улов: математическое ожидание $E[X]=\\sum_x x\\,P(X=x)$. Снова и снова "очевидный" ход проигрывает неочевидному. Глаз обманывает, число — нет.',
       gate: { kind: 'hold' },
     },
     {
       id: 'B5.3',
       scene: 'scene-5',
       prompt:
-        'Expectation picks the best move in this roll. But a turn has three rolls, a game has thirteen turns, and every box you fill is closed for good. Is expectation alone enough?',
+        'Матожидание выбирает лучший ход в этом броске. Но в ходе три броска, в игре тринадцать ходов, и каждая заполненная ячейка закрывается навсегда. Достаточно ли одного матожидания?',
     },
   ],
 }

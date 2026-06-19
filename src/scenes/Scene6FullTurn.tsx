@@ -21,11 +21,11 @@ const CATEGORIES: { id: Category; label: string; upper: boolean }[] = [
   { id: 'chance', label: 'Chance', upper: false },
 ]
 
-export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
+export function FullTurnModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [rollNum, setRollNum] = useState(0)
   const [hand, setHand] = useState<number[]>([1, 2, 3, 4, 5])
   const [kept, setKept] = useState<boolean[]>([false, false, false, false, false])
-  const [upperSum, setUpperSum] = useState(0) // running upper-section total toward 63
+  const [upperSum, setUpperSum] = useState(0) // текущая сумма верхней секции до 63
   const dice = [useDieRoll(1), useDieRoll(2), useDieRoll(3), useDieRoll(4), useDieRoll(5)]
 
   const handleRoll = () => {
@@ -36,7 +36,7 @@ export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
     })
     setHand(rolled)
     setRollNum(rollNum + 1)
-    satisfyGate?.() // gate: rolled in the turn
+    satisfyGate?.() // гейт: бросок в ходе
   }
 
   const toggleKeep = (idx: number) => {
@@ -53,14 +53,14 @@ export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
   const scoreBox = (cat: { id: Category; upper: boolean }) => {
     const pts = handScores.get(cat.id) ?? 0
     if (cat.upper) setUpperSum((s) => Math.min(63, s + pts))
-    // reset for a fresh turn
+    // сброс для нового хода
     setRollNum(0)
     setHand([1, 2, 3, 4, 5])
     setKept([false, false, false, false, false])
-    satisfyGate?.() // gate: scored a box
+    satisfyGate?.() // гейт: выбрана ячейка
   }
 
-  const showScorecard = rollNum === 3 || activeStepId === 'B6.2'
+  const showScorecard = rollNum === 3 || activeBeatId === 'B6.2'
   const bonusReached = upperSum >= 63
   const displayHand = hand.map((v, i) =>
     dice[i].throwing ? dice[i].displayValue : v
@@ -69,7 +69,7 @@ export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
   return (
     <div className="full-turn-model">
       <div className="turn-status">
-        <p className="roll-counter">Roll {rollNum} / 3</p>
+        <p className="roll-counter">Бросок {rollNum} / 3</p>
       </div>
 
       <div className="dice-section">
@@ -89,13 +89,13 @@ export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
         {rollNum < 3 && (
           <RollButton
             onRoll={handleRoll}
-            label={rollNum === 0 ? 'Roll' : 'Reroll loose'}
+            label={rollNum === 0 ? 'Бросить' : 'Перебросить свободные'}
             pulsing={rollNum === 0}
           />
         )}
       </div>
 
-      {/* Bonus tracker: upper section toward 63 */}
+      {/* Трекер бонуса: верхняя секция до 63 */}
       <div className="bonus-tracker">
         <div className="bonus-bar-bg">
           <div
@@ -104,7 +104,7 @@ export function FullTurnModel({ activeStepId, satisfyGate }: SceneModelProps) {
           />
         </div>
         <p className="bonus-label">
-          Upper {upperSum} / 63 {bonusReached ? '· +35 ✓' : ''}
+          Верх {upperSum} / 63 {bonusReached ? '· +35 ✓' : ''}
         </p>
       </div>
 
@@ -136,25 +136,25 @@ export const scene6: Scene = {
       id: 'B6.1',
       scene: 'scene-6',
       prompt:
-        'A full turn by the rules: up to three rolls, keep what you like between them, then write down one category.',
+        'Полный ход по правилам: до трёх бросков, оставляя между ними что хотите, затем запись в одну категорию.',
       payoff:
-        "There's a reward with a catch: the upper section pays +35 — but only if you reach 63 in it. That's exactly what six threes-of-a-kind add up to: $63 = 3\\cdot(1+2+\\dots+6)$.",
+        'Есть награда с подвохом: верхняя секция даёт +35, но только если набрать в ней 63. Это ровно столько, сколько дают шесть троек: $63 = 3\\cdot(1+2+\\dots+6)$.',
       gate: { kind: 'roll', needed: 1 },
     },
     {
       id: 'B6.2',
       scene: 'scene-6',
       prompt:
-        'Now score a box — and watch the upper tracker. A player who grabs the most points every turn easily falls short of 63 and loses the whole bonus.',
+        'Теперь запишите очки в ячейку — и следите за трекером верха. Игрок, который каждый ход хватает максимум очков, легко не добирает до 63 и теряет весь бонус.',
       payoff:
-        "Locally perfect, globally lost. And there's a second, bigger reward: +100 for every extra Yahtzee. Remember it — it comes back to do something spectacular.",
+        'Локально идеально, глобально — проигрыш. И есть вторая, большая награда: +100 за каждый дополнительный Yahtzee. Запомните это — оно ещё вернётся и сделает нечто впечатляющее.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B6.3',
       scene: 'scene-6',
       prompt:
-        "So the best move depends not only on what's in your hand now, but on what comes later. How do you choose the present for the sake of the future?",
+        'Так что лучший ход зависит не только от того, что у вас в руке сейчас, но и от того, что будет потом. Как выбрать настоящее ради будущего?',
     },
   ],
 }

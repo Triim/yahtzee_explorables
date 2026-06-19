@@ -1,0 +1,192 @@
+.prob-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.prob-model--empty {
+  min-height: 1px;
+}
+
+.readout {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.hint {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---- buttons ---- */
+.act-btn,
+.coin-btn,
+.die-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.9rem 1.4rem;
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.coin-btn,
+.die-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+}
+
+.act-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.act-btn--on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ---- coin ---- */
+.coin-face {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fde68a, #f59e0b);
+  color: #7c2d12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s ease;
+}
+
+.coin-face.flipping {
+  animation: coinFlip 0.3s ease;
+}
+
+@keyframes coinFlip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(540deg) scale(1.08);
+  }
+  100% {
+    transform: rotateX(1080deg);
+  }
+}
+
+/* ---- bars ---- */
+.prob-bars {
+  overflow: visible;
+}
+
+.bars-bar {
+  transition: height 0.25s ease, y 0.25s ease;
+}
+
+.bars-target {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  opacity: 0.7;
+}
+
+.bars-tick {
+  fill: var(--text-muted);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+/* ---- slider ---- */
+.prob-slider {
+  width: 100%;
+  max-width: 320px;
+  accent-color: var(--accent);
+}
+
+/* ---- tree ---- */
+.tree-edge {
+  stroke: var(--border-color);
+  stroke-width: 2;
+}
+
+.tree-edge--dim {
+  stroke-dasharray: 4 4;
+  stroke: var(--accent);
+  opacity: 0.6;
+}
+
+.tree-node {
+  fill: var(--panel-bg);
+  stroke: var(--text-muted);
+  stroke-width: 2;
+}
+
+.tree-node--on {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.tree-label,
+.tree-leaf {
+  fill: var(--text-color);
+  font-size: 13px;
+}
+
+.tree-leaf {
+  font-size: 12px;
+}
+
+/* ---- two dice ---- */
+.two-dice-row {
+  display: flex;
+  gap: 1rem;
+}
+
+/* ---- 6×6 grid ---- */
+.dice-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.grid-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.grid-cell:hover {
+  border-color: var(--accent);
+}
+
+.grid-cell--on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}

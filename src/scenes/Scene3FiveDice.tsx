@@ -3,7 +3,7 @@ import type { SceneModelProps, Scene } from '@/scaffolding'
 import { multisetCount } from '@/engine'
 import './FiveDiceModel.css'
 
-export function FiveDiceModel({ activeStepId, satisfyGate }: SceneModelProps) {
+export function FiveDiceModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [hand, setHand] = useState<number[]>([5, 3, 2, 1, 1])
   const [sorted, setSorted] = useState(false)
   const [showCollapse, setShowCollapse] = useState(false)
@@ -17,17 +17,17 @@ export function FiveDiceModel({ activeStepId, satisfyGate }: SceneModelProps) {
       setHand([5, 3, 2, 1, 1])
     }
     setSorted(!sorted)
-    satisfyGate?.() // gate: toggled order on/off
+    satisfyGate?.() // гейт: переключить порядок
   }
 
   const displayHand = hand
   const uniqueCount = multisetCount()
-  const showToggle = activeStepId === 'B3.2'
-  const showCount = activeStepId === 'B3.2' || activeStepId === 'B3.3'
+  const showToggle = activeBeatId === 'B3.2'
+  const showCount = activeBeatId === 'B3.2' || activeBeatId === 'B3.3'
 
   return (
     <div className="five-dice-model">
-      {/* Hand display (base) */}
+      {/* Отображение руки (базовое) */}
       <div className="dice-visualization">
         <div className={`five-dice-display ${showCollapse ? 'collapsing' : ''}`}>
           {displayHand.map((value, i) => (
@@ -38,27 +38,27 @@ export function FiveDiceModel({ activeStepId, satisfyGate }: SceneModelProps) {
         </div>
       </div>
 
-      {/* Ordered stat (always visible) */}
+      {/* Упорядоченная статистика (видна всегда) */}
       <div className="stats-section">
         <p className="stat-item">
-          Ordered rolls: <strong>6<sup>5</sup> = 7,776</strong>
+          Упорядоченные броски: <strong>6<sup>5</sup> = 7,776</strong>
         </p>
       </div>
 
-      {/* Toggle button (unlocks at s3-3) */}
+      {/* Кнопка переключения (открывается на s3-3) */}
       {showToggle && (
         <button className="toggle-button" onClick={handleToggleSorted}>
-          {sorted ? '→ Shuffle' : '→ Sort'}
+          {sorted ? '→ Перемешать' : '→ Сортировать'}
         </button>
       )}
 
-      {/* Unique count (unlocks at s3-4) */}
+      {/* Количество уникальных (открывается на s3-4) */}
       {showCount && (
         <div className="stats-section collapse-reveal">
           <p className="stat-item collapse-stat">
-            Multisets: <strong>{uniqueCount}</strong>
+            Мультимножества: <strong>{uniqueCount}</strong>
           </p>
-          <p className="stat-note">7,776 → {uniqueCount} (order ignored)</p>
+          <p className="stat-note">7,776 → {uniqueCount} (порядок не важен)</p>
         </div>
       )}
     </div>
@@ -73,22 +73,22 @@ export const scene3: Scene = {
       id: 'B3.1',
       scene: 'scene-3',
       prompt:
-        'Five dice. Counting pairs won\'t work — there are $6^5 = 7776$ ways for them to fall, and no table in five dimensions.',
+        'Пять костей. Подсчёт пар не сработает — есть $6^5 = 7776$ способов их выпадения, и никакой таблицы в пяти измерениях не хватит.',
     },
     {
       id: 'B3.2',
       scene: 'scene-3',
       prompt:
-        "The trick: order doesn't matter — only which faces showed. Sort the hand and watch.",
+        'Хитрость в том, что порядок не имеет значения — важны только выпавшие грани. Отсортируйте руку и смотрите.',
       payoff:
-        'Stop telling order apart and 7776 outcomes collapse into just 252 states: $\\binom{6+5-1}{5}=252$. A multiset — the most economical description of a hand. From here on a "hand" is one state.',
+        'Перестаньте различать порядок, и 7776 исходов схлопнутся всего в 252 состояния: $\\binom{6+5-1}{5}=252$. Мультимножество — самое экономное описание руки. С этого момента "рука" — это одно состояние.',
       gate: { kind: 'toggle' },
     },
     {
       id: 'B3.3',
       scene: 'scene-3',
       prompt:
-        'Now the hand is a clean object. And here, for the first time, the real question of the game: what do you keep?',
+        'Теперь рука — это чистый объект. И здесь, впервые, возникает настоящий вопрос игры: что оставить?',
     },
   ],
 }
