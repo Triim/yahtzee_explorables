@@ -1,7 +1,10 @@
 /* ============================================================
-   Shell layout — the page scrolls; the right panel is sticky.
-   Gating is done by collapsing out-of-reach beats, not by
-   hijacking the wheel.
+   Shell layout
+   - The page scrolls; only the LEFT reading column moves.
+   - The RIGHT model stage is pinned (position: fixed) and never
+     scrolls — its content swaps as the active beat changes.
+   - The hero is a full-screen curtain that splits in two as the
+     reader scrolls the first viewport, uncovering both panes.
    ============================================================ */
 
 html {
@@ -12,72 +15,22 @@ html,
 body,
 #root {
   overflow-x: hidden;
-  height: auto;
 }
 
-/* ---- Hero (full-screen title, no models) ---- */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: var(--bg);
+/* ---- Left reading column (the only thing that scrolls) ---- */
+.reader {
+  position: relative;
+  z-index: 2;
+  width: 40%;
+  min-width: 360px;
 }
 
-.hero-inner {
-  max-width: 40rem;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  line-height: 1.05;
-  margin: 0 0 1.5rem 0;
-  color: var(--text-h);
-  letter-spacing: -0.02em;
-}
-
-.hero-sub {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: var(--text-muted);
-  margin: 0 auto 3rem auto;
-  max-width: 32rem;
-}
-
-.hero-arrow {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  padding: 0.5rem;
-  animation: heroBob 1.8s ease-in-out infinite;
-}
-
-.hero-arrow:hover {
-  color: var(--accent);
-}
-
-@keyframes heroBob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(8px);
-  }
-}
-
-/* ---- Two-column reading layout ---- */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(360px, 4fr) 6fr;
-  align-items: start;
+.hero-spacer {
+  height: 100vh;
 }
 
 .track {
-  grid-column: 1;
-  border-right: 1px solid var(--border-color);
+  position: relative;
 }
 
 /* ---- Beats: one viewport each, centered ---- */
@@ -87,7 +40,6 @@ body,
   align-items: center;
   justify-content: center;
   padding: 4rem 2.5rem;
-  /* collapse transition for gating */
   transition: min-height 0.35s ease, padding 0.35s ease, opacity 0.35s ease;
 }
 
@@ -137,8 +89,8 @@ body,
   animation: chevronBob 1.6s ease-in-out infinite;
 }
 
-/* Gating: beats past the first unsatisfied gate are collapsed to nothing,
-   so there is no document to scroll into. Fully reversible. */
+/* Gating: beats past the first unsatisfied gate collapse out of the document,
+   so there is nothing to scroll into. No wheel hijack, fully reversible. */
 .beat--locked {
   min-height: 0;
   height: 0;
@@ -171,36 +123,119 @@ body,
   }
 }
 
-/* ---- Sticky model panel ---- */
-.scene-panel {
-  grid-column: 2;
-  position: sticky;
+/* ---- Fixed model stage (right 60%, pinned) ---- */
+.scene-stage {
+  position: fixed;
   top: 0;
+  right: 0;
+  width: 60%;
   height: 100vh;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--panel-bg);
   padding: 2rem;
   overflow: hidden;
-  transition: background-color 0.3s ease;
 }
 
-/* Entrance choreography: text lands first; the model slides in only once the
-   reader scrolls past the section's opening (or a short fallback elapses). */
-.scene-panel-inner {
-  opacity: 0;
-  transform: translateX(28px);
-  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+/* Entrance choreography: text lands first; the model slides in once the reader
+   scrolls into the section (or a short fallback elapses). */
+.scene-stage-inner {
   width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
 }
 
-.scene-panel.is-revealed .scene-panel-inner {
+.scene-stage.is-revealed .scene-stage-inner {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* ---- Hero: a full-screen curtain that splits on scroll ---- */
+.hero {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  --p: 0;
+}
+
+.hero-curtain {
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  will-change: transform;
+}
+
+.hero-curtain--left {
+  left: 0;
+  width: 40%;
+  background: var(--bg);
+  transform: translateX(calc(var(--p) * -100%));
+}
+
+.hero-curtain--right {
+  right: 0;
+  width: 60%;
+  background: var(--panel-bg);
+  transform: translateX(calc(var(--p) * 100%));
+}
+
+.hero-titles {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  pointer-events: none;
+  opacity: calc(1 - var(--p) * 1.8);
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: 1.05;
+  margin: 0 0 1.5rem 0;
+  color: var(--text-h);
+  letter-spacing: -0.02em;
+}
+
+.hero-sub {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 auto 2.5rem auto;
+  max-width: 32rem;
+}
+
+.hero-arrow {
+  pointer-events: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.5rem;
+  animation: heroBob 1.8s ease-in-out infinite;
+}
+
+.hero-arrow:hover {
+  color: var(--accent);
+}
+
+@keyframes heroBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
 }
 
 /* ---- Navigation rail ---- */
@@ -292,7 +327,8 @@ body,
 }
 
 @media (max-width: 860px) {
-  .layout,
+  .reader,
+  .scene-stage,
   .hero,
   .nav {
     display: none;
@@ -314,7 +350,7 @@ body,
     scroll-behavior: auto;
   }
   .beat-inner,
-  .scene-panel-inner {
+  .scene-stage-inner {
     transition: opacity 0.2s ease-out;
     transform: none;
   }

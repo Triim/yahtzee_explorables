@@ -47,11 +47,19 @@ function AppContent() {
   return (
     <>
       <NavMenu />
-      <HeroTitle />
-      <div className="layout">
+
+      {/* Fixed right-hand stage: it never scrolls, only its content swaps. */}
+      <ActiveSceneRenderer />
+
+      {/* Left reading column scrolls; the page provides the scroll. */}
+      <main className="reader">
+        <div className="hero-spacer" aria-hidden="true" />
         <BeatTrack />
-        <ActiveSceneRenderer />
-      </div>
+      </main>
+
+      {/* Full-screen hero that splits like a curtain as you scroll. */}
+      <HeroTitle />
+
       <div className="mobile-stub">
         <p>
           Эта интерактивная история рассчитана на широкий экран. Открой её на

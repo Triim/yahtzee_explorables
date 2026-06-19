@@ -1,30 +1,30 @@
 import { useBeatContext } from './BeatContext'
 
+/**
+ * The fixed right-hand stage. It is pinned to the viewport and never scrolls —
+ * only its content swaps as the active beat changes.
+ */
 export function ActiveSceneRenderer() {
   const { scenes, activeBeat, satisfyGate, revealed } = useBeatContext()
 
-  if (!activeBeat) {
-    return <div className="scene-panel" aria-hidden="true" />
-  }
-
-  const scene = scenes.find((s) => s.id === activeBeat.scene)
-  if (!scene) {
-    return <div className="scene-panel" aria-hidden="true" />
-  }
-
-  const Model = scene.model
+  const scene = activeBeat
+    ? scenes.find((s) => s.id === activeBeat.scene)
+    : undefined
+  const Model = scene?.model
 
   return (
-    <div className={`scene-panel ${revealed ? 'is-revealed' : ''}`}>
-      <div className="scene-panel-inner">
-        <Model
-          key={scene.id}
-          activeBeatId={activeBeat.id}
-          modelState={activeBeat.modelState}
-          satisfyGate={() => satisfyGate(activeBeat.id)}
-          revealed={revealed}
-        />
+    <aside className={`scene-stage ${revealed ? 'is-revealed' : ''}`}>
+      <div className="scene-stage-inner">
+        {Model && scene && activeBeat && (
+          <Model
+            key={scene.id}
+            activeBeatId={activeBeat.id}
+            modelState={activeBeat.modelState}
+            satisfyGate={() => satisfyGate(activeBeat.id)}
+            revealed={revealed}
+          />
+        )}
       </div>
-    </div>
+    </aside>
   )
 }
