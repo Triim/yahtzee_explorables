@@ -157,43 +157,48 @@ body,
   transform: translateX(0);
 }
 
-/* ---- Hero: a full-screen title that is CUT in half on scroll ----
-   Two identical copies are stacked; each is clipped to one half along the
-   horizontal centerline (which runs through the title). On scroll the top half
-   slides up and the bottom half slides down — the text is sliced apart and the
-   layout behind is uncovered. */
+/* ---- Hero: a full-screen title CUT along the vertical pane seam ----
+   The cut runs down the same line that divides the two panes in the content
+   (--split, = the reading column's width). Two stacked copies, each clipped to
+   one side of that line and tinted like the pane behind it; the title is
+   centered on the seam (shifted left of screen-center) so the slice runs
+   through the text. On scroll the left side slides left and the right slides
+   right — the text is cut apart and the two panes are uncovered. */
 .hero {
   position: fixed;
   inset: 0;
   z-index: 4;
   --p: 0;
+  --split: 40%;
 }
 
 .hero-half {
   position: absolute;
   inset: 0;
-  background: var(--bg);
   overflow: hidden;
   will-change: transform;
 }
 
-.hero-half--top {
-  clip-path: inset(0 0 50% 0);
-  transform: translateY(calc(var(--p) * -100%));
+.hero-half--left {
+  background: var(--bg);
+  clip-path: inset(0 calc(100% - var(--split)) 0 0);
+  transform: translateX(calc(var(--p) * -100%));
 }
 
-.hero-half--bottom {
-  clip-path: inset(50% 0 0 0);
-  transform: translateY(calc(var(--p) * 100%));
+.hero-half--right {
+  background: var(--panel-bg);
+  clip-path: inset(0 0 0 var(--split));
+  transform: translateX(calc(var(--p) * 100%));
 }
 
-/* Title centered exactly on the cut line so the slice runs through the text. */
+/* Title centered on the seam so the vertical slice runs through the text. */
 .hero-title {
   position: absolute;
   top: 50%;
-  left: 0;
-  right: 0;
-  transform: translateY(-50%);
+  left: var(--split);
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: 92vw;
   text-align: center;
   margin: 0;
   font-size: clamp(3rem, 8vw, 5.5rem);
@@ -205,10 +210,10 @@ body,
 .hero-sub {
   position: absolute;
   top: 50%;
-  left: 50%;
+  left: var(--split);
   transform: translateX(-50%);
-  margin-top: 3.75rem;
-  width: min(32rem, 80vw);
+  margin-top: 4.25rem;
+  width: min(34rem, 80vw);
   text-align: center;
   font-size: 1.2rem;
   line-height: 1.6;
@@ -218,7 +223,7 @@ body,
 .hero-arrow {
   position: absolute;
   bottom: 11vh;
-  left: 50%;
+  left: var(--split);
   transform: translateX(-50%);
   pointer-events: auto;
   background: none;

@@ -74,10 +74,10 @@ export function HeroTitle() {
 
   return (
     <div className="hero" ref={rootRef} style={{ ['--p' as string]: 0 }}>
-      <div className="hero-half hero-half--top" aria-hidden="true">
+      <div className="hero-half hero-half--left" aria-hidden="true">
         <HeroContent />
       </div>
-      <div className="hero-half hero-half--bottom">
+      <div className="hero-half hero-half--right">
         <HeroContent />
       </div>
     </div>
