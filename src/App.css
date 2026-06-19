@@ -14,7 +14,9 @@ html {
 html,
 body,
 #root {
-  overflow-x: hidden;
+  /* clip (not hidden): clips horizontal overflow WITHOUT creating a scroll
+     container, so the intro beat's position:sticky still works. */
+  overflow-x: clip;
 }
 
 /* ---- Left reading column (the only thing that scrolls) ---- */
