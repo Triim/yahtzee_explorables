@@ -1,0 +1,128 @@
+.rules-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  max-width: 440px;
+}
+
+.rules-model--empty {
+  min-height: 1px;
+}
+
+.rules-hand {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rules-demo {
+  margin: -0.6rem 0 0 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.rules-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.rules-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.rules-readout {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* scorecard */
+.rules-card {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 1.5rem;
+  width: 100%;
+  max-width: 340px;
+  counter-reset: row;
+}
+
+.rules-card li {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.rules-card .card-divider {
+  border-bottom: 2px solid var(--accent-border);
+}
+
+/* face picker */
+.face-pick {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.face-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.face-btn--on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* probability scale */
+.rules-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.scale-row {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.scale-bg {
+  fill: var(--border-color);
+}
+
+.scale-fill {
+  fill: var(--accent);
+}
+
+.scale-val {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

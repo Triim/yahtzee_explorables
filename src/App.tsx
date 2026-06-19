@@ -9,7 +9,7 @@ import { NavMenu } from '@/scaffolding/NavMenu'
 import { openingScene } from '@/scenes/OpeningScene'
 import { scene1 } from '@/scenes/Scene1Probability'
 import { scene2 } from '@/scenes/Scene2FiveDiceState'
-import { scene35 } from '@/scenes/Scene35Categories'
+import { scene3 } from '@/scenes/Scene3Rules'
 import { scene4, scene5 } from '@/scenes/Scene4And5'
 import { scene6 } from '@/scenes/Scene6FullTurn'
 import { scene7 } from '@/scenes/Scene7StateDP'
@@ -25,7 +25,7 @@ const allScenes: Scene[] = [
   withMenu(openingScene, 'Введение'),
   withMenu(scene1, '1 · Вероятность'),
   withMenu(scene2, '2 · Пять кубиков'),
-  withMenu(scene35, '3 · Правила и комбинации'),
+  withMenu(scene3, '3 · Правила и комбинации'),
   withMenu(scene4, '4 · Переброс'),
   withMenu(scene5, '5 · Случайная величина'),
   withMenu(scene6, '6 · Линейность и жадность'),
