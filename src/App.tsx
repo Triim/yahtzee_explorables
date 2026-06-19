@@ -13,7 +13,7 @@ import { scene3 } from '@/scenes/Scene3Rules'
 import { scene4 } from '@/scenes/Scene4Reroll'
 import { scene5 } from '@/scenes/Scene5RandomVariable'
 import { scene6 } from '@/scenes/Scene6Linearity'
-import { scene7 } from '@/scenes/Scene7StateDP'
+import { scene7 } from '@/scenes/Scene7Value'
 import { scene8 } from '@/scenes/Scene8Strategies'
 import { scene9, scene10 } from '@/scenes/Scene9And10'
 
