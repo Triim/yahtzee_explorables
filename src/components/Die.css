@@ -56,26 +56,26 @@
   pointer-events: none;
 }
 
-/* ---- Throw animation (Part 2 §D) ---- */
+/* ---- Throw animation: wind-up → arc (~540°, ease-out) → bounce ---- */
 @keyframes dieThrow {
   0% {
     transform: translateY(0) rotate(0deg) scale(1);
   }
-  12% {
-    transform: translateY(3px) rotate(0deg) scale(0.9);
-  } /* wind up */
-  45% {
-    transform: translateY(-16px) rotate(300deg) scale(1.05);
-  } /* toss + spin up */
-  80% {
-    transform: translateY(0) rotate(520deg) scale(1);
-  } /* coming down */
-  90% {
-    transform: translateY(0) rotate(540deg) scale(1.12);
+  10% {
+    transform: translateY(5px) rotate(-8deg) scale(0.88);
+  } /* wind up (anticipation) */
+  42% {
+    transform: translateY(-34px) rotate(300deg) scale(1.06);
+  } /* apex of the arc, spinning up */
+  78% {
+    transform: translateY(0) rotate(515deg) scale(1);
+  } /* coming down, spin decelerating */
+  88% {
+    transform: translateY(0) rotate(540deg) scale(1.13);
   } /* impact */
-  96% {
-    transform: translateY(0) rotate(540deg) scale(0.96);
-  } /* squash */
+  94% {
+    transform: translateY(-3px) rotate(540deg) scale(0.95);
+  } /* bounce + squash */
   100% {
     transform: translateY(0) rotate(540deg) scale(1);
   } /* settle */

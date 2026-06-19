@@ -1,30 +1,20 @@
 import type React from 'react'
 
-export type Register = 'free' | 'driven' | 'showcase'
-
-export type Directive =
-  | { kind: 'activate'; model: string }
-  | { kind: 'unlock'; tool: string }
-  | { kind: 'setState'; payload: unknown }
-  | { kind: 'showcase'; clip: string }
-
-export interface Step {
-  id: string
-  copyType: 'вопрос' | 'инструкция' | 'определение' | 'формула' | 'врезка' | 'переход'
-  register: Register
-  directive?: Directive
-  text: string
-}
-
 export interface SceneModelProps {
-  activeStepId: string | null
-  directive?: Directive
-  register: Register
-  /** Mark the currently-active beat's gate as satisfied (Part 2). */
+  activeBeatId: string | null
+  modelState?: unknown
+  /** Mark the currently-active beat's gate as satisfied. */
   satisfyGate?: () => void
+  /**
+   * Entrance choreography: the model panel reveals only after the section's
+   * text has landed and the reader scrolls once more. Models may use this to
+   * stagger their own internals, but the panel-level reveal is handled by the
+   * shell.
+   */
+  revealed?: boolean
 }
 
-/* ---- Part 2: beats ---- */
+/* ---- beats ---- */
 
 export type GateKind = 'roll' | 'slider' | 'choice' | 'hold' | 'toggle'
 
@@ -40,14 +30,17 @@ export interface Beat {
   prompt: string // the ONE line shown first
   payoff?: string // revealed AFTER the gated interaction
   gate?: GateSpec // if present, beat is locked until satisfied
+  modelState?: unknown
 }
 
 export interface Scene {
   id: string
   model: React.FC<SceneModelProps>
-  /** Legacy step list (auto-converted to pure-read beats until reauthored). */
-  steps?: Step[]
-  /** Part 2 beats. When present, these drive the scene instead of steps. */
-  beats?: Beat[]
-  panel?: 'single' | 'rich'
+  beats: Beat[]
+  /**
+   * If set, the scene appears in the navigation menu with this label and the
+   * menu entry scrolls to the scene's first beat. Used to build the
+   * "Введение + 10 разделов" rail.
+   */
+  menuLabel?: string
 }

@@ -14,33 +14,33 @@ const QUESTIONS: Record<
 > = {
   q1: {
     beat: 'B0.1',
-    text: 'Sum of 7 or sum of 12 — which comes up more often?',
+    text: 'Сумма 7 или сумма 12 — что выпадает чаще?',
     options: [
       { value: '7', label: '7' },
       { value: '12', label: '12' },
-      { value: 'equally', label: 'Equally' },
+      { value: 'equally', label: 'Одинаково' },
     ],
   },
   q2: {
     beat: 'B0.2',
-    text: "A six hasn't shown in ten rolls. Its chance now is…",
+    text: 'Шестёрка не выпадала десять бросков. Её шанс сейчас…',
     options: [
-      { value: 'higher', label: 'Higher' },
-      { value: 'lower', label: 'Lower' },
-      { value: 'same', label: 'Same' },
+      { value: 'higher', label: 'Выше' },
+      { value: 'lower', label: 'Ниже' },
+      { value: 'same', label: 'Тот же' },
     ],
   },
   q3: {
     beat: 'B0.3',
-    text: 'Four sixes, one reroll left — gamble for the fifth six?',
+    text: 'Четыре шестёрки, один переброс. Рискнуть ради пятой?',
     options: [
-      { value: 'yes', label: 'Yes' },
-      { value: 'no', label: 'No' },
+      { value: 'yes', label: 'Да' },
+      { value: 'no', label: 'Нет' },
     ],
   },
 }
 
-export function IntuitionNotebook({ activeStepId, satisfyGate }: SceneModelProps) {
+export function IntuitionNotebook({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [answers, setAnswers] = useState<Record<QKey, string | null>>({
     q1: null,
     q2: null,
@@ -48,7 +48,7 @@ export function IntuitionNotebook({ activeStepId, satisfyGate }: SceneModelProps
   })
 
   const activeKey = (Object.keys(QUESTIONS) as QKey[]).find(
-    (k) => QUESTIONS[k].beat === activeStepId
+    (k) => QUESTIONS[k].beat === activeBeatId
   )
 
   const select = (key: QKey, value: string) => {
@@ -108,25 +108,25 @@ export const scene0: Scene = {
       id: 'B0.1',
       scene: 'scene-0',
       prompt:
-        "Before any math — three guesses, on instinct. First: roll two dice. Which is more common, a sum of 7 or a sum of 12?",
-      payoff: "Locked in. We'll come back to it.",
+        'Прежде чем погрузиться в математику — три быстрых вопроса на интуицию. Первый: бросаем две кости. Что выпадает чаще, сумма 7 или 12?',
+      payoff: 'Ответ зафиксирован. Мы к нему ещё вернёмся.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B0.2',
       scene: 'scene-0',
       prompt:
-        "Second. A six hasn't shown up in ten rolls. Is its chance of landing now higher, lower, or the same as ever?",
-      payoff: 'Noted. Hold that thought.',
+        'Второй. Шестёрка не выпадала уже десять бросков. Её шанс выпасть сейчас выше, ниже или такой же, как всегда?',
+      payoff: 'Принято. Запомним этот ответ.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B0.3',
       scene: 'scene-0',
       prompt:
-        "And third. You're holding four sixes, one reroll left. Worth the risk for that fifth six?",
+        'И третий. У вас на руках четыре шестёрки и остался один переброс. Стоит ли рисковать ради пятой шестёрки?',
       payoff:
-        "All three locked. We'll return to every one — and by the end you may answer differently. Now: the simplest random object there is.",
+        'Все три ответа заперты. Мы вернёмся к каждому из них — и, возможно, к концу статьи вы ответите иначе. А теперь — к простейшему из случайных объектов.',
       gate: { kind: 'choice' },
     },
   ],

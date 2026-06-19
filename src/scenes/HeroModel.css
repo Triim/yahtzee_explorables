@@ -2,35 +2,39 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
   padding: 2rem;
 }
 
-.hero-die-container {
-  animation: float 3s ease-in-out infinite;
+/* The handful of five dice — a single clickable target. */
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem 1.6rem;
+  max-width: 22rem;
+  padding: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-.hero-subtitle {
-  color: var(--text-muted);
-  font-size: 1rem;
-  margin: 0;
-  text-align: center;
+.hand:disabled {
+  cursor: default;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+/* Gentle organic scatter so the hand doesn't read as a grid. */
+.hand > .die-wrap:nth-child(2) {
+  transform: translateY(-10px);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-die-container {
-    animation: none;
-  }
+.hand > .die-wrap:nth-child(3) {
+  transform: translateY(8px);
+}
+.hand > .die-wrap:nth-child(4) {
+  transform: translateY(-6px);
+}
+.hand > .die-wrap:nth-child(5) {
+  transform: translateY(6px);
 }

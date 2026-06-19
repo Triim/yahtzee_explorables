@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { Scene, SceneModelProps } from '@/scaffolding'
 import { useMonteCarloWorker } from '@/engine'
 import { RollButton } from '@/components'
 import './StrategiesModel.css'
@@ -30,16 +30,16 @@ export function StrategiesModel(_props: SceneModelProps) {
   }
 
   const strategies = [
-    { name: 'Random', value: results?.random || 0, color: '#888' },
-    { name: 'Greedy', value: results?.greedy || 0, color: '#f59' },
-    { name: 'Optimal (DP)', value: results?.optimal || 0, color: '#3b8' },
+    { name: 'Случайная', value: results?.random || 0, color: '#888' },
+    { name: 'Жадная', value: results?.greedy || 0, color: '#f59' },
+    { name: 'Оптимальная (ДП)', value: results?.optimal || 0, color: '#3b8' },
   ]
 
   const maxScore = Math.max(...strategies.map((s) => s.value), 280)
 
   return (
     <div className="strategies-model">
-      <h2>Three Ways to Play</h2>
+      <h2>Три способа играть</h2>
 
       <div className="strategies-bars">
         {strategies.map((strat) => (
@@ -62,22 +62,22 @@ export function StrategiesModel(_props: SceneModelProps) {
       {!results ? (
         <RollButton
           onRoll={runTournament}
-          label="Run Tournament"
+          label="Провести турнир"
           pulsing={true}
         />
       ) : (
         <>
           <div className="results-text">
             <p>
-              Random play scores ~{results.random.toFixed(0)}. Greedy heuristics do better
-              (~{results.greedy.toFixed(0)}). Optimal play reaches {results.optimal}.
+              Случайная игра набирает ~{results.random.toFixed(0)} очков. Жадная эвристика показывает результат получше
+              (~{results.greedy.toFixed(0)}). Оптимальная игра достигает {results.optimal}.
             </p>
             <p className="gap-text">
-              The gap? Strategy matters — a lot.
+              В чем разница? Стратегия имеет значение — большое значение.
             </p>
           </div>
           <button className="re-run-button" onClick={runTournament}>
-            Run again
+            Запустить снова
           </button>
         </>
       )}
@@ -85,34 +85,33 @@ export function StrategiesModel(_props: SceneModelProps) {
   )
 }
 
-export const scene8 = {
+export const scene8: Scene = {
   id: 'scene-8',
   model: StrategiesModel,
-  steps: [
+  beats: [
     {
-      id: 's8-1',
-      copyType: 'инструкция' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'strategies' },
-      text: 'Here\'s what happens when three players take the same dice: one rolling blind, one trying to grab points, one thinking ahead.',
+      id: 'B8.1',
+      scene: 'scene-8',
+      prompt:
+        'Вот что происходит, когда три игрока получают одинаковые кости: один бросает вслепую, другой пытается набрать очки, третий думает наперед.',
     },
     {
-      id: 's8-2',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Click and play ten thousand games. How much better is planning than guessing?',
+      id: 'B8.2',
+      scene: 'scene-8',
+      prompt: 'Сыграйте десять тысяч игр. Насколько планирование лучше, чем угадывание?',
+      gate: { kind: 'choice' },
     },
     {
-      id: 's8-3',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'The gap grows as you improve. From random to greedy is a boost. From greedy to optimal is another. Strategy compounds.',
+      id: 'B8.3',
+      scene: 'scene-8',
+      prompt:
+        'Разрыв растет по мере вашего совершенствования. Переход от случайной к жадной стратегии — это уже прорыв. От жадной к оптимальной — еще один. Стратегия усложняется.',
     },
     {
-      id: 's8-4',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'But we\'ve been playing alone. A game has players. What happens when two sit down?',
+      id: 'B8.4',
+      scene: 'scene-8',
+      prompt:
+        'Но до сих пор мы играли в одиночку. В игре есть игроки. Что произойдет, когда за стол сядут двое?',
     },
   ],
 }

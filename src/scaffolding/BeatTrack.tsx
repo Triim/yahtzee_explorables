@@ -1,14 +1,13 @@
-import type { GateKind, Scene } from './types'
-import { getSceneBeats } from './beats'
+import type { GateKind } from './types'
 import { useBeatContext } from './BeatContext'
 import { RichText } from './RichText'
 
 const GATE_CUE: Record<GateKind, string> = {
-  roll: 'roll to continue',
-  slider: 'drag to continue',
-  choice: 'choose to continue',
-  hold: 'hold a die to continue',
-  toggle: 'toggle to continue',
+  roll: 'бросьте, чтобы продолжить',
+  slider: 'потяните ползунок, чтобы продолжить',
+  choice: 'выберите, чтобы продолжить',
+  hold: 'удержите кубик, чтобы продолжить',
+  toggle: 'переключите, чтобы продолжить',
 }
 
 function Chevron() {
@@ -32,23 +31,29 @@ function Chevron() {
   )
 }
 
-export function BeatTrack({ scenes }: { scenes: Scene[] }) {
-  const { activeBeatId, isSatisfied } = useBeatContext()
-  const allBeats = scenes.flatMap(getSceneBeats)
+export function BeatTrack() {
+  const { allBeats, activeBeatId, isSatisfied, reachableThrough } =
+    useBeatContext()
 
   return (
     <div className="track">
-      {allBeats.map((beat) => {
+      {allBeats.map((beat, i) => {
         const active = beat.id === activeBeatId
         const gated = !!beat.gate
         const open = !gated || isSatisfied(beat.id)
+        // Past the first unsatisfied gate the document is collapsed: nothing to
+        // scroll into until the gate opens. No wheel hijack, fully reversible.
+        const locked = i > reachableThrough
 
         return (
           <section
             key={beat.id}
-            className={`beat ${active ? 'active' : ''}`}
+            className={`beat ${active ? 'active' : ''} ${
+              locked ? 'beat--locked' : ''
+            }`}
             data-beat-id={beat.id}
             data-scene-id={beat.scene}
+            aria-hidden={locked || undefined}
           >
             <div className="beat-inner">
               <p className="beat-prompt">
@@ -65,7 +70,7 @@ export function BeatTrack({ scenes }: { scenes: Scene[] }) {
                 <p className="beat-cue">{GATE_CUE[beat.gate!.kind]}</p>
               )}
 
-              {open && <Chevron />}
+              {open && i < reachableThrough && <Chevron />}
             </div>
           </section>
         )

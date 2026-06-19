@@ -1,8 +1,11 @@
 import './App.css'
+import type { Scene } from '@/scaffolding'
 import { BeatProvider } from '@/scaffolding/BeatContext'
 import { useActiveBeat } from '@/scaffolding/useActiveBeat'
 import { BeatTrack } from '@/scaffolding/BeatTrack'
 import { ActiveSceneRenderer } from '@/scaffolding/ActiveSceneRenderer'
+import { HeroTitle } from '@/scaffolding/HeroTitle'
+import { NavMenu } from '@/scaffolding/NavMenu'
 import { openingScene } from '@/scenes/OpeningScene'
 import { scene0 } from '@/scenes/Scene0Intuition'
 import { scene05 } from '@/scenes/Scene05Coins'
@@ -16,37 +19,52 @@ import { scene7 } from '@/scenes/Scene7StateDP'
 import { scene8 } from '@/scenes/Scene8Strategies'
 import { scene9, scene10 } from '@/scenes/Scene9And10'
 
-const allScenes = [
-  openingScene,
-  scene0,
+/** Attach a menu label to the scene that opens each of the eleven sections. */
+function withMenu(scene: Scene, menuLabel: string): Scene {
+  return { ...scene, menuLabel }
+}
+
+const allScenes: Scene[] = [
+  withMenu(openingScene, 'Введение'),
+  withMenu(scene0, '1 · Вероятность'),
   scene05,
   scene1,
   scene2,
-  scene3,
-  scene35,
-  scene4,
-  scene5,
-  scene6,
-  scene7,
-  scene8,
-  scene9,
-  scene10,
+  withMenu(scene3, '2 · Пять кубиков'),
+  withMenu(scene35, '3 · Правила и комбинации'),
+  withMenu(scene4, '4 · Переброс'),
+  withMenu(scene5, '5 · Случайная величина'),
+  withMenu(scene6, '6 · Линейность и жадность'),
+  withMenu(scene7, '7 · Ценность положения'),
+  withMenu(scene8, '8 · Стратегии'),
+  withMenu(scene9, '9 · Соперник'),
+  withMenu(scene10, '10 · Синтез'),
 ]
 
 function AppContent() {
   useActiveBeat()
 
   return (
-    <div className="layout">
-      <BeatTrack scenes={allScenes} />
-      <ActiveSceneRenderer scenes={allScenes} />
-    </div>
+    <>
+      <NavMenu />
+      <HeroTitle />
+      <div className="layout">
+        <BeatTrack />
+        <ActiveSceneRenderer />
+      </div>
+      <div className="mobile-stub">
+        <p>
+          Эта интерактивная история рассчитана на широкий экран. Открой её на
+          компьютере.
+        </p>
+      </div>
+    </>
   )
 }
 
 function App() {
   return (
-    <BeatProvider>
+    <BeatProvider scenes={allScenes}>
       <AppContent />
     </BeatProvider>
   )

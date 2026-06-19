@@ -1,106 +1,118 @@
 import { useState, useEffect } from 'react'
-import type { SceneModelProps } from '@/scaffolding'
+import type { SceneModelProps, Scene } from '@/scaffolding'
 import { initOracle } from '@/engine/oracle'
 import './StateDPModel.css'
 
-export function StateDPModel(_props: SceneModelProps) {
+// A short ribbon of alternating cold (chance) and hot (choice) nodes.
+const NODES = [
+  { type: 'hot' as const },
+  { type: 'cold' as const },
+  { type: 'hot' as const },
+  { type: 'cold' as const },
+  { type: 'hot' as const },
+  { type: 'cold' as const },
+  { type: 'hot' as const },
+]
+
+export function StateDPModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [oracleValue, setOracleValue] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [propagated, setPropagated] = useState(0) // how many nodes filled from the end
 
   useEffect(() => {
     initOracle()
-      .then((oracle) => {
-        setOracleValue(oracle.optimalExpectedScore)
-        setLoading(false)
-      })
-      .catch(() => {
-        setOracleValue(254.589)
-        setLoading(false)
-      })
+      .then((o) => setOracleValue(o.optimalExpectedScore))
+      .catch(() => setOracleValue(254.589))
   }, [])
+
+  const runBackwardInduction = () => {
+    satisfyGate?.() // gate: ran the backward pass
+    // Fill values right-to-left, one node per tick.
+    let n = 0
+    const tick = () => {
+      n += 1
+      setPropagated(n)
+      if (n < NODES.length) window.setTimeout(tick, 180)
+    }
+    setPropagated(0)
+    window.setTimeout(tick, 150)
+  }
+
+  const showRun = activeBeatId === 'B7.2' || activeBeatId === 'B7.3'
+  const valueReady = propagated >= NODES.length
+
+  const W = 320
+  const cx = (i: number) => 28 + (i * (W - 56)) / (NODES.length - 1)
+  const cy = 50
 
   return (
     <div className="state-dp-model">
-      <div className="oracle-box">
-        <h3>The Oracle</h3>
-        <p className="description">
-          Starting from an empty scorecard, playing optimally, your expected score is:
-        </p>
-        {loading ? (
-          <p className="loading">Loading oracle...</p>
-        ) : (
-          <div className="oracle-value">{oracleValue}</div>
-        )}
-        <p className="note">
-          This number comes from dynamic programming: we compute the value of every game state,
-          working backwards from the end.
-        </p>
+      <svg viewBox="0 0 320 100" className="state-graph" role="img" aria-label="Холодные и горячие узлы состояний">
+        {/* edges */}
+        {NODES.slice(0, -1).map((_, i) => (
+          <line key={i} x1={cx(i)} y1={cy} x2={cx(i + 1)} y2={cy} className="sg-edge" />
+        ))}
+        {/* nodes; filled from the end as backward induction propagates */}
+        {NODES.map((node, i) => {
+          const filled = i >= NODES.length - propagated
+          return (
+            <circle
+              key={i}
+              cx={cx(i)}
+              cy={cy}
+              r={13}
+              className={`sg-node ${node.type} ${filled ? 'filled' : ''}`}
+            />
+          )
+        })}
+      </svg>
+
+      <div className="sg-legend">
+        <span className="sg-key cold">холодный · шанс · среднее</span>
+        <span className="sg-key hot">горячий · выбор · максимум</span>
       </div>
 
-      <div className="concept-box">
-        <h3>States and Values</h3>
-        <ul className="concept-list">
-          <li>
-            <strong>State:</strong> Which boxes are filled, which open
-          </li>
-          <li>
-            <strong>Value:</strong> Best expected score from this state onward
-          </li>
-          <li>
-            <strong>Transition:</strong> Roll, reroll, pick a box (3 choices → state)
-          </li>
-          <li>
-            <strong>Recursion:</strong> V(state) = max over choices of E[V(next state)]
-          </li>
-        </ul>
-      </div>
+      {showRun && (
+        <button className="sg-run" onClick={runBackwardInduction}>
+          Запустить обратную индукцию
+        </button>
+      )}
 
-      <div className="states-count">
-        <p>
-          Possible states: <strong>~3 million</strong> (2^13 filled + turn number)
-        </p>
-        <p>
-          Computation: One backward pass, 13 turns × 2^13 states × 252 hands × 3 rolls
-        </p>
+      <div className={`value-panel ${valueReady ? 'ready' : ''}`}>
+        <span className="vp-label">V(пустое поле)</span>
+        <span className="vp-value">
+          {valueReady ? (oracleValue?.toFixed(3) ?? '…') : '—'}
+        </span>
       </div>
     </div>
   )
 }
 
-export const scene7 = {
+export const scene7: Scene = {
   id: 'scene-7',
   model: StateDPModel,
-  steps: [
+  beats: [
     {
-      id: 's7-1',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      directive: { kind: 'activate' as const, model: 'statedp' },
-      text: 'A game state is a snapshot: which boxes are filled, which open, how many turns left. Each state has a value — the best expected score from here on, assuming optimal play.',
+      id: 'B7.1',
+      scene: 'scene-7',
+      prompt:
+        'Поднимемся над рамками одного хода: вся игра — это состояния и переходы. Состояния бывают двух цветов.',
+      payoff:
+        'В холодном узле решает случай — сразу после броска, ценность усредняется по всем исходам, $E=\\sum_i p_i E_i$. В горячем узле решаете вы — оставить или записать — и вы выбираете лучшее, $E=\\max_i E_i$. Игра представляет собой ленту из холодных и горячих кругов.',
     },
     {
-      id: 's7-2',
-      copyType: 'формула' as const,
-      register: 'free' as const,
-      text: 'This value satisfies a recursion. Pick a box, get its score plus the value of the new state: $V = \\max_{\\text{box}} \\left( f(\\text{hand}) + V(\\text{next state}) \\right)$.',
+      id: 'B7.2',
+      scene: 'scene-7',
+      prompt:
+        'Чтобы знать, что делать сейчас, считайте с конца. Запустите — и значения потекут в обратном направлении по графу.',
+      payoff:
+        "Вы не выбираете лучший бросок, вы выбираете ход, который ведет к лучшему будущему: $V(s)=\\max_a E[V(s')]$. При такой игре средний результат составляет около 254.6 — это потолок для любой пасьянсной стратегии.",
+      gate: { kind: 'toggle' },
     },
     {
-      id: 's7-3',
-      copyType: 'вопрос' as const,
-      register: 'free' as const,
-      text: 'Work backwards from the last turn. When you\'ve filled twelve boxes and hold the final roll, the thirteenth box\'s value is obvious. Recurse up to the start.',
-    },
-    {
-      id: 's7-4',
-      copyType: 'определение' as const,
-      register: 'free' as const,
-      text: 'This is dynamic programming: build up the solution by breaking the problem into overlapping subproblems, solving each once, storing the result.',
-    },
-    {
-      id: 's7-5',
-      copyType: 'переход' as const,
-      register: 'free' as const,
-      text: 'The oracle you see above is real: it comes from solving every game state. But people don\'t compute; they improvise. How do humans play, and why do they lose?',
+      id: 'B7.3',
+      scene: 'scene-7',
+      prompt:
+        'Итак, у нас есть идеальная пасьянсная игра. Но какие существуют стратегии — и как они выглядят не в одной игре, а в тысяче?',
     },
   ],
 }

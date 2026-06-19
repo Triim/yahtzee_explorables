@@ -1,49 +1,100 @@
-/* The document scrolls; gentle snap rests on one beat at a time. */
+/* ============================================================
+   Shell layout — the page scrolls; the right panel is sticky.
+   Gating is done by collapsing out-of-reach beats, not by
+   hijacking the wheel.
+   ============================================================ */
+
 html {
-  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
 }
 
 html,
 body,
 #root {
-  overflow: visible;
+  overflow-x: hidden;
   height: auto;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(320px, 38rem) minmax(0, 1fr);
-  gap: clamp(24px, 5vw, 80px);
-  align-items: start;
+/* ---- Hero (full-screen title, no models) ---- */
+.hero {
   min-height: 100vh;
-  padding: 0;
-  margin: 0;
-}
-
-.track {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-/* ---- Beat sections: one per viewport, snap stops ---- */
-.beat {
-  min-height: 100vh;
-  scroll-snap-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
-  width: 100%;
+  padding: 2rem;
+  background: var(--bg);
+}
+
+.hero-inner {
+  max-width: 40rem;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: 1.05;
+  margin: 0 0 1.5rem 0;
+  color: var(--text-h);
+  letter-spacing: -0.02em;
+}
+
+.hero-sub {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 auto 3rem auto;
+  max-width: 32rem;
+}
+
+.hero-arrow {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 0.5rem;
+  animation: heroBob 1.8s ease-in-out infinite;
+}
+
+.hero-arrow:hover {
+  color: var(--accent);
+}
+
+@keyframes heroBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+/* ---- Two-column reading layout ---- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 4fr) 6fr;
+  align-items: start;
+}
+
+.track {
+  grid-column: 1;
   border-right: 1px solid var(--border-color);
+}
+
+/* ---- Beats: one viewport each, centered ---- */
+.beat {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2.5rem;
+  /* collapse transition for gating */
+  transition: min-height 0.35s ease, padding 0.35s ease, opacity 0.35s ease;
 }
 
 .beat-inner {
   max-width: 34rem;
   width: 100%;
-  /* Progressive reveal — opacity/transform only, never height */
-  opacity: 0.35;
+  opacity: 0.4;
   transform: translateY(10px);
   transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
@@ -55,8 +106,8 @@ body,
 
 .beat-prompt {
   margin: 0;
-  font-size: 1.35rem;
-  line-height: 1.5;
+  font-size: 1.3rem;
+  line-height: 1.55;
   color: var(--text-h);
 }
 
@@ -72,17 +123,29 @@ body,
 
 .beat-cue {
   margin: 1.5rem 0 0 0;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--accent);
+  opacity: 0.85;
 }
 
 .beat-chevron {
   display: block;
-  margin: 1.5rem auto 0 auto;
+  margin: 1.75rem auto 0 auto;
   color: var(--text-muted);
   animation: chevronBob 1.6s ease-in-out infinite;
+}
+
+/* Gating: beats past the first unsatisfied gate are collapsed to nothing,
+   so there is no document to scroll into. Fully reversible. */
+.beat--locked {
+  min-height: 0;
+  height: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 @keyframes payoffIn {
@@ -108,36 +171,112 @@ body,
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  .beat-inner {
-    transform: none;
-    transition: opacity 0.2s ease-out;
-  }
-  .beat-payoff,
-  .beat-chevron {
-    animation: none;
-  }
-}
-
-/* ---- Sticky stage (shared per-scene model) ---- */
-.stage {
+/* ---- Sticky model panel ---- */
+.scene-panel {
+  grid-column: 2;
   position: sticky;
   top: 0;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: auto;
   background: var(--panel-bg);
   padding: 2rem;
-  opacity: 1;
-  transition: opacity 0.3s ease-out;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
-/* Visible fallback when a model throws or a scene id is unknown */
+/* Entrance choreography: text lands first; the model slides in only once the
+   reader scrolls past the section's opening (or a short fallback elapses). */
+.scene-panel-inner {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scene-panel.is-revealed .scene-panel-inner {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ---- Navigation rail ---- */
+.nav {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  font-size: 0.9rem;
+}
+
+.nav-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  padding: 10px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+}
+
+.nav-toggle-bar {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--text-color);
+  border-radius: 2px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0.5rem 0 0 0;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
+
+.nav--open .nav-list {
+  max-height: 80vh;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.nav-item--active {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent-bg);
+}
+
+/* ---- Visible fallback when a model throws ---- */
 .stage-error {
   max-width: 420px;
   padding: 1.25rem 1.5rem;
@@ -147,56 +286,41 @@ body,
   color: #dc2626;
 }
 
-.stage-error strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-  color: #dc2626;
+/* ---- Mobile stub: desktop-first ---- */
+.mobile-stub {
+  display: none;
 }
 
-.stage-error pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 0.85rem;
-  font-family: var(--mono);
-  color: var(--text-color);
-}
-
-/* Tablet and smaller */
-@media (max-width: 1024px) {
-  .layout {
-    grid-template-columns: 1fr;
-    gap: 0;
+@media (max-width: 860px) {
+  .layout,
+  .hero,
+  .nav {
+    display: none;
   }
-
-  .beat {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: 2rem 1.5rem;
-    min-height: 80vh;
-  }
-
-  .stage {
-    position: static;
-    height: auto;
-    min-height: 400px;
+  .mobile-stub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-muted);
   }
 }
 
-/* Mobile */
-@media (max-width: 640px) {
-  .beat {
-    padding: 1.5rem 1rem;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
-
-  .stage {
-    min-height: 300px;
-    padding: 1rem;
+  .beat-inner,
+  .scene-panel-inner {
+    transition: opacity 0.2s ease-out;
+    transform: none;
   }
-
-  .beat button,
-  .beat input {
-    font-size: 16px;
+  .beat-payoff,
+  .beat-chevron,
+  .hero-arrow {
+    animation: none;
   }
 }
