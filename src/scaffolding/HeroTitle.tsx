@@ -10,17 +10,14 @@ function HeroContent() {
   }
   return (
     <>
-      <h1 className="hero-title">{pick(UI.heroTitle, lang)}</h1>
-      <div className="hero-dice-title" aria-hidden="true">
-        <div className="hero-dice-group hero-dice-group--left">
+      <div className="hero-center">
+        <h1 className="hero-title">{pick(UI.heroTitle, lang)}</h1>
+        <div className="hero-dice-title" aria-hidden="true">
           <span className="hero-title-die hero-title-die--1"><span className="hero-title-pip hero-title-pip--cc" /></span>
           <span className="hero-title-die hero-title-die--4">
             <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--tr" />
             <span className="hero-title-pip hero-title-pip--bl" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
-        </div>
-
-        <div className="hero-dice-group hero-dice-group--right">
           <span className="hero-title-die hero-title-die--2">
             <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
@@ -34,9 +31,9 @@ function HeroContent() {
             <span className="hero-title-pip hero-title-pip--tr" /><span className="hero-title-pip hero-title-pip--mr" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
         </div>
+        <p className="hero-sub">{pick(UI.heroSub, lang)}</p>
+        <p className="hero-author">{pick(UI.heroAuthor, lang)}</p>
       </div>
-      <p className="hero-sub">{pick(UI.heroSub, lang)}</p>
-      <p className="hero-author">{pick(UI.heroAuthor, lang)}</p>
       <button
         type="button"
         className="hero-arrow"

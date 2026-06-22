@@ -366,49 +366,98 @@ body,
   transform: translateY(calc(var(--pr) * -100%));
 }
 
-/* Title centered on the seam so the vertical slice runs through the text. */
-.hero-title {
+/* The title block is anchored on the seam so the vertical slice runs through
+   it. Everything inside is one centered flow column → the dice, subtitle and
+   author line stack with even gaps and stay vertically centered at any viewport
+   height, so nothing can collide with the scroll arrow on short screens. */
+.hero-center {
   position: absolute;
   top: 50%;
   left: var(--split);
   transform: translate(-50%, -50%);
-  width: max-content;
-  max-width: 92vw;
+  width: min(56rem, 84vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.6rem, 4.5vh, 2.9rem);
   text-align: center;
-  margin: 0;
-  font-family: var(--hand);
-  font-size: clamp(3.2rem, 8.5vw, 6rem);
-  line-height: 1.05;
-  color: var(--text-h);
-  letter-spacing: -0.01em;
+  pointer-events: none;
 }
 
-.hero-sub {
+/* Real heading kept for a11y/SEO; visually it's drawn as the dice row below. */
+.hero-title {
   position: absolute;
-  top: 50%;
-  left: var(--split);
-  transform: translateX(-50%);
-  margin-top: 4.75rem;
-  width: min(34rem, 80vw);
-  text-align: center;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Decorative dice spelling the title; the pane seam cuts through the row. */
+.hero-dice-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.8rem, 1.4vw, 1.5rem);
+}
+
+.hero-title-die {
+  position: relative;
+  display: block;
+  width: clamp(4.4rem, 5.2vw + 1.6vh, 7.2rem);
+  aspect-ratio: 1;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 3px solid currentColor;
+  border-radius: 20%;
+  box-shadow: 0.2rem 0.2rem 0 var(--border-color);
+  transform: rotate(var(--hero-die-tilt, 0deg));
+}
+
+.hero-half--right .hero-title-die {
+  background: var(--panel-bg);
+}
+
+.hero-title-die--1 { --hero-die-tilt: -4deg; }
+.hero-title-die--2 { --hero-die-tilt: 3deg; }
+.hero-title-die--4 { --hero-die-tilt: 2deg; }
+.hero-title-die--5 { --hero-die-tilt: -2deg; }
+.hero-title-die--6 { --hero-die-tilt: 4deg; }
+
+.hero-title-pip {
+  position: absolute;
+  width: 11.5%;
+  height: 11.5%;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.hero-title-pip--tl { left: 28%; top: 28%; transform: translate(-50%, -50%); }
+.hero-title-pip--tr { right: 28%; top: 28%; transform: translate(50%, -50%); }
+.hero-title-pip--bl { left: 28%; bottom: 28%; transform: translate(-50%, 50%); }
+.hero-title-pip--br { right: 28%; bottom: 28%; transform: translate(50%, 50%); }
+.hero-title-pip--cc { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.hero-title-pip--ml { left: 28%; top: 50%; transform: translate(-50%, -50%); }
+.hero-title-pip--mr { right: 28%; top: 50%; transform: translate(50%, -50%); }
+
+.hero-sub {
+  margin: 0;
+  width: min(52rem, 82vw);
   font-family: var(--hand);
-  font-size: 1.45rem;
-  line-height: 1.5;
+  font-size: clamp(1.18rem, 1.4vw, 1.5rem);
+  line-height: 1.42;
   color: var(--text-muted);
 }
 
-
 .hero-author {
-  position: absolute;
-  top: 50%;
-  left: var(--split);
-  transform: translateX(-50%);
-  margin-top: 12.25rem;
-  width: min(34rem, 80vw);
-  text-align: center;
+  margin: 0;
   font-family: var(--hand);
-  font-size: 1rem;
-  line-height: 1.4;
+  font-size: clamp(0.92rem, 1vw, 1.08rem);
+  line-height: 1.35;
   color: var(--text-muted);
   opacity: 0.76;
 }
@@ -715,123 +764,4 @@ body,
   .hero-arrow {
     animation: none;
   }
-}
-
-
-/* ---- Opening hero dice-title redesign v1 ---- */
-.hero {
-  --hero-die-size: clamp(5.4rem, 7.2vw, 7.6rem);
-  --hero-die-gap: clamp(0.9rem, 1.3vw, 1.45rem);
-  --hero-seam-gap: clamp(0.7rem, 1vw, 1rem);
-}
-
-.hero-title {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  overflow: hidden !important;
-  clip-path: inset(50%) !important;
-  white-space: nowrap !important;
-}
-
-.hero-dice-title {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.hero-dice-group {
-  position: absolute;
-  top: clamp(8rem, 22vh, 12.5rem);
-  display: flex;
-  align-items: center;
-  gap: var(--hero-die-gap);
-}
-
-.hero-dice-group--left {
-  right: calc(100% - var(--split) + var(--hero-seam-gap));
-}
-
-.hero-dice-group--right {
-  left: calc(var(--split) + var(--hero-seam-gap));
-}
-
-.hero-title-die {
-  position: relative;
-  display: block;
-  width: var(--hero-die-size);
-  aspect-ratio: 1;
-  color: var(--text-h);
-  background: var(--bg);
-  border: 3px solid currentColor;
-  border-radius: 20%;
-  box-shadow: 0.2rem 0.2rem 0 var(--border-color);
-  transform: rotate(var(--hero-die-tilt, 0deg));
-}
-
-.hero-half--right .hero-title-die {
-  background: var(--panel-bg);
-}
-
-.hero-title-die--1 { --hero-die-tilt: -4deg; }
-.hero-title-die--2 { --hero-die-tilt: 3deg; }
-.hero-title-die--4 { --hero-die-tilt: 2deg; }
-.hero-title-die--5 { --hero-die-tilt: -2deg; }
-.hero-title-die--6 { --hero-die-tilt: 4deg; }
-
-.hero-title-pip {
-  position: absolute;
-  width: calc(var(--hero-die-size) * 0.115);
-  height: calc(var(--hero-die-size) * 0.115);
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.hero-title-pip--tl { left: 28%; top: 28%; transform: translate(-50%, -50%); }
-.hero-title-pip--tr { right: 28%; top: 28%; transform: translate(50%, -50%); }
-.hero-title-pip--bl { left: 28%; bottom: 28%; transform: translate(-50%, 50%); }
-.hero-title-pip--br { right: 28%; bottom: 28%; transform: translate(50%, 50%); }
-.hero-title-pip--cc { left: 50%; top: 50%; transform: translate(-50%, -50%); }
-.hero-title-pip--ml { left: 28%; top: 50%; transform: translate(-50%, -50%); }
-.hero-title-pip--mr { right: 28%; top: 50%; transform: translate(50%, -50%); }
-
-.hero-sub {
-  top: clamp(21rem, 51vh, 26rem);
-  left: var(--split);
-  transform: translateX(-50%);
-  margin-top: 0;
-  width: min(48rem, 78vw);
-  text-align: center;
-  font-size: clamp(1.25rem, 1.55vw, 1.6rem);
-  line-height: 1.38;
-  color: var(--text-muted);
-}
-
-.hero .hero-author {
-  position: absolute;
-  top: clamp(27rem, 64vh, 32rem);
-  left: var(--split);
-  transform: translateX(-50%);
-  margin: 0;
-  width: min(42rem, 78vw);
-  text-align: center;
-  font-family: var(--hand);
-  font-size: clamp(0.95rem, 1.05vw, 1.12rem);
-  line-height: 1.35;
-  color: var(--text-muted);
-  opacity: 0.76;
-}
-/* ---- End opening hero dice-title redesign v1 ---- */
-
-/* ---- Opening hero spacing correction v2 ---- */
-.hero-sub {
-  top: clamp(23rem, 52vh, 27rem);
-  width: min(56rem, 82vw);
-  font-size: clamp(1.18rem, 1.38vw, 1.42rem);
-  line-height: 1.34;
-}
-
-.hero .hero-author {
-  top: clamp(32rem, 72vh, 36rem);
-  font-size: clamp(0.9rem, 0.95vw, 1rem);
 }
