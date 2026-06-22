@@ -1,3 +1,8 @@
+:root {
+  --split: clamp(320px, 40vw, 560px);
+  --stage-pad: clamp(0.75rem, 2vw, 2rem);
+}
+
 /* ============================================================
    Shell layout
    - The page scrolls; only the LEFT reading column moves.
@@ -23,8 +28,8 @@ body,
 .reader {
   position: relative;
   z-index: 2;
-  width: 40%;
-  min-width: 360px;
+  width: var(--split);
+  min-width: 0;
 }
 
 .track {
@@ -204,15 +209,17 @@ body,
   position: fixed;
   top: 0;
   right: 0;
-  width: 60%;
-  height: 100vh;
+  left: var(--split);
+  width: auto;
+  height: 100dvh;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--panel-bg);
-  padding: 2rem;
+  padding: var(--stage-pad);
   overflow: hidden;
+  --model-scale: 1;
 }
 
 /* Entrance choreography: text lands first; the model slides in once the reader
@@ -342,7 +349,6 @@ body,
   z-index: 4;
   --pl: 0;
   --pr: 0;
-  --split: 40%;
 }
 
 .hero-half {
@@ -438,7 +444,6 @@ body,
   position: fixed;
   inset: 0;
   z-index: 3;
-  --split: 40%;
   --pl: 0;
   --pr: 0;
   transition: opacity 0.12s linear;
@@ -665,7 +670,7 @@ body,
   display: none;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 860px) and (pointer: coarse) {
   .reader,
   .scene-stage,
   .hero,
@@ -698,5 +703,43 @@ body,
   .beat-chevron,
   .hero-arrow {
     animation: none;
+  }
+}
+
+
+@media (min-width: 1280px) and (min-height: 760px) {
+  .scene-stage {
+    --model-scale: 1.14;
+  }
+}
+
+@media (min-width: 1500px) and (min-height: 850px) {
+  .scene-stage {
+    --model-scale: 1.32;
+  }
+}
+
+@media (max-width: 1100px), (max-height: 700px) {
+  .scene-stage {
+    --model-scale: 0.92;
+  }
+
+  .beat,
+  .track > .beat:first-child .beat-inner {
+    padding: 2.5rem 1.75rem;
+  }
+}
+
+@media (max-width: 950px), (max-height: 620px) {
+  .scene-stage {
+    --model-scale: 0.82;
+  }
+
+  .beat-prompt {
+    font-size: 1.3rem;
+  }
+
+  .beat-payoff {
+    font-size: 1.05rem;
   }
 }
