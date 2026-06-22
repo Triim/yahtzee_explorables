@@ -64,12 +64,34 @@ function simBell(t: number) {
   return { n, hist }
 }
 
-/* ---- Coin ---- */
+/* ---- Coin ----
+   A round sibling of the dice: same themed face / edge / pip colours and soft
+   contact shadow as <Die>, just a circle with a struck letter instead of pips. */
 function Coin({ letter, flipping }: { letter: string; flipping: boolean }) {
   return (
-    <div className={`coin-face ${flipping ? 'flipping' : ''}`}>
-      <span>{letter}</span>
-    </div>
+    <span className="coin-wrap">
+      <svg
+        width={112}
+        height={112}
+        viewBox="0 0 100 100"
+        className={`coin ${flipping ? 'coin--flipping' : ''}`}
+        role="img"
+        aria-label={letter}
+      >
+        <circle cx={50} cy={50} r={44} className="coin-body" strokeWidth={2} />
+        <circle cx={50} cy={50} r={37} className="coin-rim" fill="none" strokeWidth={1.5} />
+        <text
+          x={50}
+          y={50}
+          className="coin-letter"
+          textAnchor="middle"
+          dominantBaseline="central"
+        >
+          {letter}
+        </text>
+      </svg>
+      <span className="coin-shadow" />
+    </span>
   )
 }
 

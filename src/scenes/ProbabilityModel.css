@@ -62,34 +62,61 @@
   background: var(--accent-bg);
 }
 
-/* ---- coin: a round, flat minted disc (no gradient) ----
-   Flat silver face with a stepped milled rim built from solid inset rings, and
-   an engraved serif letter (NOT the hand font — a struck coin reads as crisp,
-   not sketched). */
-.coin-face {
-  width: 124px;
-  height: 124px;
-  border-radius: 50%;
-  background: #c9ced6;
-  color: #444b56;
-  display: flex;
+/* ---- coin: a round sibling of the dice ----
+   Same themed face / edge / pip colours and soft contact shadow as <Die>, so it
+   reads as part of the same set — just a circle with a struck letter. */
+.coin-wrap {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  /* drop shadow + concentric solid rings = a milled rim, no gradient */
-  box-shadow:
-    0 5px 12px rgba(0, 0, 0, 0.22),
-    inset 0 0 0 2px #aeb4be,
-    inset 0 0 0 4px #c9ced6,
-    inset 0 0 0 6px #9fa6b1;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 -1px 0 rgba(0, 0, 0, 0.14);
-  transition: transform 0.3s ease;
 }
 
-.coin-face.flipping {
+.coin {
+  display: block;
+  position: relative;
+  z-index: 1;
+  transform-origin: center;
+}
+
+.coin-body {
+  fill: var(--die-face);
+  stroke: var(--die-edge);
+}
+
+/* faint inner ring — a minted rim that stays on the die palette */
+.coin-rim {
+  stroke: var(--die-edge);
+  opacity: 0.55;
+}
+
+.coin-letter {
+  fill: var(--die-pip);
+  font-family: var(--hand);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* Soft contact shadow under the coin, matching the die */
+.coin-shadow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 70%;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.coin--flipping {
   animation: coinFlip 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -102,6 +129,12 @@
   }
   100% {
     transform: rotateX(1080deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin--flipping {
+    animation: none;
   }
 }
 
