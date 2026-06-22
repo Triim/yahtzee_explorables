@@ -12,11 +12,8 @@ export function pick(b: Bilingual, lang: Lang): string {
 /* ---- UI chrome (everything that isn't beat content) ---- */
 
 export const UI = {
-  heroTitle: { ru: 'Пять кубиков', en: 'Five dice' },
-  heroSub: {
-    ru: 'Яцзы — игра в пять кубиков: бросаешь, собираешь комбинации и заполняешь тринадцать строк; у кого за партию больше очков, тот и выиграл. А ещё это интерактивное введение в теорию вероятностей на примере простой игры в кости — от первого броска до игры против соперника вся математика случайности собрана здесь руками. Трогаешь правое — читаешь левое.',
-    en: 'Yahtzee is a game of five dice: you roll, build combinations and fill in thirteen rows; whoever scores the most over a game wins. It’s also an interactive introduction to probability through a simple dice game — from the first roll to playing an opponent, all the mathematics of chance, assembled here by hand. You touch on the right, you read on the left.',
-  },
+  heroTitle: { ru: '', en: '' },
+  heroSub: { ru: 'Интерактивное введение в теорию вероятностей на примере простой игры в кости. Трогай правое — читай левое.', en: 'An interactive introduction to probability through a simple dice game. Touch the right side — read the left side.' },
   heroArrow: { ru: 'Листай вниз', en: 'Scroll down' },
   sections: { ru: 'Разделы', en: 'Sections' },
   progress: { ru: 'Прогресс чтения', en: 'Reading progress' },

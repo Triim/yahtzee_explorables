@@ -743,3 +743,178 @@ body,
     font-size: 1.05rem;
   }
 }
+
+
+/* ---- Opening hero: final aligned composition ---- */
+.hero {
+  --hero-die-size: clamp(6.35rem, 8.55vw, 8.9rem);
+  --hero-die-gap: clamp(1.05rem, 1.65vw, 1.75rem);
+  --hero-seam-gap: clamp(0.8rem, 1.1vw, 1.15rem);
+
+  --hero-left-stack-width: calc((2 * var(--hero-die-size)) + var(--hero-die-gap));
+  --hero-copy-left: calc(var(--split) - var(--hero-seam-gap) - var(--hero-left-stack-width));
+
+  --hero-copy-top: 55%;
+  --hero-text-size: clamp(1.3rem, 1.68vw, 1.68rem);
+  --hero-byline-size: clamp(1rem, 1.23vw, 1.24rem);
+
+  --pip-size: calc(var(--hero-die-size) * 0.118);
+  --pip-inset: 28%;
+}
+
+.hero-dice-cluster {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-dice-side {
+  position: absolute;
+  top: clamp(11.5rem, 27vh, 17rem);
+  display: flex;
+  align-items: center;
+  gap: var(--hero-die-gap);
+}
+
+.hero-dice-side--left {
+  right: calc(100% - var(--split) + var(--hero-seam-gap));
+}
+
+.hero-dice-side--right {
+  left: calc(var(--split) + var(--hero-seam-gap));
+}
+
+.hero-die {
+  position: relative;
+  width: var(--hero-die-size);
+  aspect-ratio: 1;
+  display: block;
+
+  color: var(--text-h);
+  background-color: var(--bg);
+  border: 3px solid currentColor;
+  border-radius: 20%;
+  box-shadow: 0.22rem 0.22rem 0 var(--border-color);
+  transform: rotate(var(--die-tilt, 0deg));
+
+  background-image: none !important;
+}
+
+.hero-dice-side--right .hero-die {
+  background-color: var(--panel-bg);
+}
+
+.hero-die--1 { --die-tilt: -4deg; }
+.hero-die--2 { --die-tilt: 3deg; }
+.hero-die--4 { --die-tilt: 2deg; }
+.hero-die--5 { --die-tilt: -2deg; }
+.hero-die--6 { --die-tilt: 4deg; }
+
+.hero-die::before,
+.hero-die::after {
+  content: none !important;
+}
+
+.pip {
+  position: absolute;
+  width: var(--pip-size);
+  height: var(--pip-size);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pip--tl { left: var(--pip-inset); top: var(--pip-inset); transform: translate(-50%, -50%); }
+.pip--tr { right: var(--pip-inset); top: var(--pip-inset); transform: translate(50%, -50%); }
+.pip--bl { left: var(--pip-inset); bottom: var(--pip-inset); transform: translate(-50%, 50%); }
+.pip--br { right: var(--pip-inset); bottom: var(--pip-inset); transform: translate(50%, 50%); }
+.pip--cc { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.pip--ml { left: var(--pip-inset); top: 50%; transform: translate(-50%, -50%); }
+.pip--mr { right: var(--pip-inset); top: 50%; transform: translate(50%, -50%); }
+
+.hero-copy {
+  position: absolute;
+  top: var(--hero-copy-top);
+  left: var(--hero-copy-left);
+  transform: translateY(-50%);
+
+  width: calc(100% - var(--hero-copy-left) - 3rem);
+  max-width: 80rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.75rem, 1.25vh, 1.05rem);
+
+  text-align: left !important;
+}
+
+.hero-copy .hero-sub {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+
+  margin: 0;
+  width: 100%;
+  max-width: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
+
+  text-align: left !important;
+  font-family: var(--hand);
+  font-size: var(--hero-text-size);
+  line-height: 1.42;
+  color: var(--text-h);
+}
+
+.hero-copy .hero-sub-line {
+  display: block;
+  text-align: left !important;
+}
+
+.hero-copy .hero-sub-line--intro {
+  width: min(58rem, 100%);
+  max-width: 58rem;
+}
+
+.hero-copy .hero-sub-line--seam {
+  display: block;
+  width: 100%;
+  white-space: normal;
+}
+
+
+
+
+
+
+
+.hero-copy .hero-byline {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+
+  margin: 0;
+  width: 100%;
+
+  text-align: left !important;
+  font-family: var(--hand);
+  font-size: var(--hero-byline-size);
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.hero-title,
+.hero-credit,
+.hero-author,
+.site-credit {
+  display: none !important;
+}
+
+.hero-arrow {
+  bottom: 8vh;
+}
