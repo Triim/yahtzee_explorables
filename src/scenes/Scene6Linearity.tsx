@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
+import { XkcdChart, useTr } from '@/scaffolding'
 import './Linearity.css'
+
+const ACCENT = '#059669'
+
+const CONTRIB_EN = [
+  'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes',
+  'Three of a kind', 'Four of a kind', 'Full house', 'Small straight', 'Large straight', 'Yahtzee', 'Chance',
+]
 
 /* ============================================================
    Section 6 — Sum over the game: linearity and greedy's failure.
@@ -86,12 +94,55 @@ function playGreedy(): number {
   return total
 }
 
+interface TurnLog {
+  hand: number[]
+  cat: number
+  score: number
+  cum: number
+}
+
+/** One greedy game, logged turn by turn (for the walkthrough + running score). */
+function playGreedyVerbose(): TurnLog[] {
+  const used = new Set<number>()
+  let total = 0
+  let upper = 0
+  const log: TurnLog[] = []
+  for (let turn = 0; turn < 13; turn++) {
+    let hand = roll5()
+    for (let rr = 0; rr < 2; rr++) {
+      const f = mostFrequent(hand)
+      hand = hand.map((v) => (v === f ? v : rollFace()))
+    }
+    let best = -1
+    let bestScore = -1
+    for (let cat = 0; cat < 13; cat++) {
+      if (used.has(cat)) continue
+      const s = scoreCat(hand, cat)
+      if (s > bestScore) {
+        bestScore = s
+        best = cat
+      }
+    }
+    used.add(best)
+    total += bestScore
+    if (best < 6) upper += bestScore
+    log.push({ hand: [...hand], cat: best, score: bestScore, cum: total })
+  }
+  if (upper >= 63) {
+    total += 35
+    log[log.length - 1] = { ...log[log.length - 1], cum: total }
+  }
+  return log
+}
+
 export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
+  const tr = useTr()
   const [added, setAdded] = useState(false)
   const [greedyAvg, setGreedyAvg] = useState<number | null>(null)
   const [upper, setUpper] = useState<62 | 63 | null>(null)
   const [dumped, setDumped] = useState(false)
+  const [game, setGame] = useState<TurnLog[] | null>(null)
 
   const maxC = Math.max(...CONTRIB.map((c) => c.v))
 
@@ -99,23 +150,68 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
     return <div className="lin-model lin-model--empty" />
   }
 
+  if (beat === 'B6.1W') {
+    return (
+      <div className="lin-model">
+        <button type="button" className="lin-btn" onClick={() => { setGame(playGreedyVerbose()); satisfyGate?.() }}>
+          {game ? tr('сыграть ещё партию', 'play another game') : tr('сыграть партию жадного', 'play a greedy game')}
+        </button>
+        {game && (
+          <>
+            <XkcdChart
+              type="Line"
+              width={360}
+              height={180}
+              config={{
+                xLabel: tr('ход', 'turn'),
+                yLabel: tr('очки', 'points'),
+                data: {
+                  labels: game.map((_, i) => String(i + 1)),
+                  datasets: [{ label: tr('счёт', 'score'), data: game.map((l) => l.cum) }],
+                },
+                options: { yTickCount: 3, dataColors: [ACCENT] },
+              }}
+            />
+            <ol className="lin-log">
+              {game.map((t, i) => (
+                <li key={i} className="lin-log-row">
+                  <span className="lin-log-turn">{i + 1}</span>
+                  <span className="lin-log-hand">{t.hand.join(' ')}</span>
+                  <span className="lin-log-cat">{tr(CONTRIB[t.cat].name, CONTRIB_EN[t.cat])}</span>
+                  <span className="lin-log-score">{t.score}</span>
+                </li>
+              ))}
+              <li className="lin-log-row lin-log-row--total">
+                <span className="lin-log-turn" />
+                <span className="lin-log-hand" />
+                <span className="lin-log-cat">{tr('итог', 'total')}</span>
+                <span className="lin-log-score">{game[game.length - 1].cum}</span>
+              </li>
+            </ol>
+          </>
+        )}
+      </div>
+    )
+  }
+
   if (beat === 'B6.1') {
     return (
       <div className="lin-model">
         <div className="lin-contrib">
-          {CONTRIB.map((c) => (
+          {CONTRIB.map((c, i) => (
             <div className="lin-row" key={c.name}>
-              <span className="lin-name">{c.name}</span>
+              <span className="lin-name">{tr(c.name, CONTRIB_EN[i])}</span>
               <div className="lin-bar-track">
                 <div className="lin-bar" style={{ width: `${(c.v / maxC) * 100}%` }} />
               </div>
+              <span className="lin-val">{c.v}</span>
             </div>
           ))}
         </div>
         <button type="button" className="lin-btn" onClick={() => { setAdded(true); satisfyGate?.() }}>
-          сложить вклады
+          {tr('сложить вклады', 'add up the contributions')}
         </button>
-        {added && <p className="lin-total">средний итог ≈ {OPTIMUM}</p>}
+        {added && <p className="lin-total">{tr('средний итог', 'average total')} ≈ {OPTIMUM}</p>}
       </div>
     )
   }
@@ -134,17 +230,17 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
             satisfyGate?.()
           }}
         >
-          прогнать жадного (400 партий)
+          {tr('прогнать жадного (400 партий)', 'run greedy (400 games)')}
         </button>
         {greedyAvg !== null && (
           <div className="lin-compare">
             <div className="lin-cmp">
               <span className="lin-cmp-val">{greedyAvg.toFixed(0)}</span>
-              <span className="lin-cmp-label">жадный</span>
+              <span className="lin-cmp-label">{tr('жадный', 'greedy')}</span>
             </div>
             <div className="lin-cmp">
               <span className="lin-cmp-val">{OPTIMUM}</span>
-              <span className="lin-cmp-label">оптимум</span>
+              <span className="lin-cmp-label">{tr('оптимум', 'optimum')}</span>
             </div>
           </div>
         )}
@@ -158,14 +254,19 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
         <div className="lin-bonus">
           <div className="lin-bonus-num">{upper ?? '—'}</div>
           <div className={`lin-bonus-tag ${upper === 63 ? 'lin-bonus-tag--on' : ''}`}>
-            бонус {upper === 63 ? '+35' : '0'}
+            {tr('бонус', 'bonus')} {upper === 63 ? '+35' : '0'}
           </div>
         </div>
         <div className="lin-bonus-btns">
-          <button className="lin-btn" onClick={() => { setUpper(62); satisfyGate?.() }}>верх = 62</button>
-          <button className="lin-btn" onClick={() => { setUpper(63); satisfyGate?.() }}>верх = 63</button>
+          <button className="lin-btn" onClick={() => { setUpper(62); satisfyGate?.() }}>{tr('верх = 62', 'upper = 62')}</button>
+          <button className="lin-btn" onClick={() => { setUpper(63); satisfyGate?.() }}>{tr('верх = 63', 'upper = 63')}</button>
         </div>
-        <p className="lin-note">шестьдесят два — ноль; шестьдесят три — сразу +35. Это порог, не линейный вклад.</p>
+        <p className="lin-note">
+          {tr(
+            'шестьдесят два — ноль; шестьдесят три — сразу +35. Это порог, не линейный вклад.',
+            'sixty-two — zero; sixty-three — +35 at once. A threshold, not a linear contribution.'
+          )}
+        </p>
       </div>
     )
   }
@@ -178,15 +279,23 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
         className="lin-btn"
         onClick={() => { setDumped(true); satisfyGate?.() }}
       >
-        свалить отличную руку в «шанс» рано
+        {tr('свалить отличную руку в «шанс» рано', 'dump a great hand into “Chance” early')}
       </button>
       {dumped && (
         <div className="lin-irrev">
-          <p className="lin-irrev-line">ход 2 · «шанс» закрыт ✓</p>
-          <p className="lin-irrev-line lin-irrev-late">ход 13 · пришёл Yahtzee… писать некуда → <strong>0</strong></p>
+          <p className="lin-irrev-line">{tr('ход 2 · «шанс» закрыт ✓', 'turn 2 · “Chance” closed ✓')}</p>
+          <p className="lin-irrev-line lin-irrev-late">
+            {tr('ход 13 · пришёл Yahtzee… писать некуда → ', 'turn 13 · a Yahtzee arrives… nowhere to put it → ')}
+            <strong>0</strong>
+          </p>
         </div>
       )}
-      <p className="lin-note">записал — строка закрыта навсегда. Слот, потраченный сейчас, недоступен потом.</p>
+      <p className="lin-note">
+        {tr(
+          'записал — строка закрыта навсегда. Слот, потраченный сейчас, недоступен потом.',
+          'once recorded, a row is closed forever. A slot spent now is unavailable later.'
+        )}
+      </p>
     </div>
   )
 }
@@ -201,14 +310,23 @@ export const scene6: Scene = {
       prompt:
         'Итог партии — сумма тринадцати строк. А среднее у суммы устроено просто: среднее суммы равно сумме средних.',
       payoff:
-        '$E[\\sum X_i] = \\sum E[X_i]$ — это **линейность ожидания**, и она верна всегда, даже когда строки связаны. Отсюда напрашивается рецепт: набей каждую строку на максимум — и сумма выйдет максимальной.',
+        'Это та самая линейность ожидания, что усредняла число шестёрок, — только теперь для всех тринадцати строк сразу. Она верна всегда, даже когда строки связаны:\n[[$E[\\sum X_i] = \\sum E[X_i]$]]\nОтсюда напрашивается рецепт: набей каждую строку на максимум — и сумма выйдет максимальной.',
+      gate: { kind: 'choice' },
+    },
+    {
+      id: 'B6.1W',
+      scene: 'scene-6',
+      prompt:
+        'Познакомимся с **жадным** игроком. Правило у него одно: каждый ход выжать максимум очков прямо сейчас. Сыграй за него партию целиком и проследи, как растёт счёт.',
+      payoff:
+        'Видно его образ мысли: ранние броски он сбрасывает туда, где сейчас больше очков, а под конец остаются неудобные строки — и кривая счёта к финалу заметно выполаживается. Каждый ход по отдельности он сыграл «лучше всех». Запомним этот итог — сравним его со средним.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B6.2',
       scene: 'scene-6',
       prompt:
-        'Проверим рецепт на жадном игроке: каждый ход он пишет туда, где очков больше прямо сейчас. Прогони жадного.',
+        'Одна партия — это удача. Прогони жадного много раз и сравни его средний счёт с оптимумом.',
       payoff:
         'Жадный систематически отстаёт от оптимума. Странно — он ведь каждый ход берёт максимум. Значит «максимум каждый ход» и «максимум за партию» — не одно и то же. Рецепт сломался; найдём, где именно.',
       gate: { kind: 'choice' },

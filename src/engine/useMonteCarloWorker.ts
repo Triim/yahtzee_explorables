@@ -18,6 +18,7 @@ export interface SimulationResult {
 interface PendingRequest {
   resolve: (result: SimulationResult) => void
   reject: (error: Error) => void
+  onProgress?: (done: number, total: number) => void
 }
 
 export function useMonteCarloWorker() {
@@ -33,10 +34,15 @@ export function useMonteCarloWorker() {
     )
 
     worker.onmessage = (event) => {
-      const { id, type, strategyName, scores, stats, message } = event.data
+      const { id, type, strategyName, scores, stats, message, done, total } = event.data
 
       const pending = pendingRef.current.get(id)
       if (!pending) return
+
+      if (type === 'progress') {
+        pending.onProgress?.(done, total)
+        return
+      }
 
       pendingRef.current.delete(id)
 
@@ -70,7 +76,8 @@ export function useMonteCarloWorker() {
 
   const simulate = (
     strategyName: string,
-    trials: number
+    trials: number,
+    onProgress?: (done: number, total: number) => void
   ): Promise<SimulationResult> => {
     return new Promise((resolve, reject) => {
       if (!workerRef.current) {
@@ -79,7 +86,7 @@ export function useMonteCarloWorker() {
       }
 
       const id = `${strategyName}-${Date.now()}-${Math.random()}`
-      pendingRef.current.set(id, { resolve, reject })
+      pendingRef.current.set(id, { resolve, reject, onProgress })
 
       workerRef.current.postMessage({
         id,

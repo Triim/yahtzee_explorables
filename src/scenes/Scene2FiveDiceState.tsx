@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
-import { Formula } from '@/scaffolding'
+import { useTr } from '@/scaffolding'
 import { Die } from '@/components'
 import './FiveDiceState.css'
 
@@ -11,28 +11,28 @@ import './FiveDiceState.css'
 
 const START: number[] = [3, 1, 6, 1, 4]
 
-function randHand(): number[] {
-  return Array.from({ length: 5 }, () => ((Math.random() * 6) | 0) + 1)
-}
-
 export function FiveDiceStateModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
+  const tr = useTr()
 
-  const [hand, setHand] = useState<number[]>(START)
-  const [throwing, setThrowing] = useState(false)
+  const [hand] = useState<number[]>(START)
   const [ordered, setOrdered] = useState(true) // B2.2: does order matter?
   const [collapsed, setCollapsed] = useState(false)
   const [count, setCount] = useState(7776)
+  const [buildK, setBuildK] = useState(1) // B2.1: dice added so far while building 6^k
   const rafRef = useRef<number | null>(null)
 
-  const roll = () => {
-    setThrowing(true)
-    setHand(randHand())
-    window.setTimeout(() => setThrowing(false), 600)
-    satisfyGate?.()
-  }
+  // While building the count (B2.1) only k dice are on the table; elsewhere all five.
+  const handBase = beat === 'B2.1' ? hand.slice(0, buildK) : hand
+  const shown = ordered ? handBase : [...handBase].sort((a, b) => a - b)
 
-  const shown = ordered ? hand : [...hand].sort((a, b) => a - b)
+  const addBuildDie = () => {
+    setBuildK((k) => {
+      const nk = Math.min(k + 1, 5)
+      if (nk >= 5) satisfyGate?.()
+      return nk
+    })
+  }
 
   const countDistinct = () => {
     if (collapsed) return
@@ -62,17 +62,24 @@ export function FiveDiceStateModel({ activeBeatId, satisfyGate }: SceneModelProp
     <div className="fds-model">
       <div className="fds-hand">
         {shown.map((v, i) => (
-          <Die key={i} value={v} size={64} throwing={throwing} />
+          <Die key={i} value={v} size={64} />
         ))}
       </div>
 
       {beat === 'B2.1' && (
         <>
-          <button type="button" className="fds-btn" onClick={roll}>
-            бросить
+          <button
+            type="button"
+            className="fds-btn"
+            onClick={addBuildDie}
+            disabled={buildK >= 5}
+          >
+            {buildK >= 5 ? tr('пять кубиков', 'five dice') : tr('добавить кубик', 'add a die')}
           </button>
           <p className="fds-count">
-            6 × 6 × 6 × 6 × 6 = <strong>7776</strong>
+            {Array.from({ length: buildK }, () => '6').join(' × ')} ={' '}
+            <strong>{(6 ** buildK).toLocaleString(tr('ru-RU', 'en-US'))}</strong>
+            {buildK >= 2 && <> {tr('раскладов', 'arrangements')}</>}
           </p>
         </>
       )}
@@ -87,12 +94,12 @@ export function FiveDiceStateModel({ activeBeatId, satisfyGate }: SceneModelProp
               satisfyGate?.()
             }}
           >
-            {ordered ? 'учитывать порядок' : 'порядок не важен'}
+            {ordered ? tr('учитывать порядок', 'order matters') : tr('порядок не важен', 'order doesn’t matter')}
           </button>
           <p className="fds-note">
             {ordered
-              ? '3·1·6·1·4 — пять кубиков по местам'
-              : 'та же рука: 1·1·3·4·6'}
+              ? tr('3·1·6·1·4 — пять кубиков по местам', '3·1·6·1·4 — five dice in their places')
+              : tr('та же рука: 1·1·3·4·6', 'same hand: 1·1·3·4·6')}
           </p>
         </>
       )}
@@ -100,19 +107,14 @@ export function FiveDiceStateModel({ activeBeatId, satisfyGate }: SceneModelProp
       {beat === 'B2.3' && (
         <>
           <div className="fds-cloud" data-collapsed={collapsed}>
-            <span className="fds-bignum">{count.toLocaleString('ru-RU')}</span>
+            <span className="fds-bignum">{count.toLocaleString(tr('ru-RU', 'en-US'))}</span>
             <span className="fds-cloud-label">
-              {collapsed ? 'разных рук' : 'упорядоченных раскладов'}
+              {collapsed ? tr('разных рук', 'distinct hands') : tr('упорядоченных раскладов', 'ordered arrangements')}
             </span>
           </div>
           <button type="button" className="fds-btn" onClick={countDistinct}>
-            посчитать разные руки
+            {tr('посчитать разные руки', 'count distinct hands')}
           </button>
-          {collapsed && (
-            <div className="fds-formula">
-              <Formula latex="\binom{6+5-1}{5} = 252" />
-            </div>
-          )}
         </>
       )}
     </div>
@@ -127,10 +129,10 @@ export const scene2: Scene = {
       id: 'B2.1',
       scene: 'scene-2',
       prompt:
-        'Два кубика мы разложили по тридцати шести клеткам. Возьмём пять — ровно столько, сколько в самой игре. Брось.',
+        'Два кубика мы разложили по тридцати шести клеткам. Возьмём пять — ровно столько в самой игре. Сколько вообще бывает раскладов? Начни с одного кубика и добавляй по одному.',
       payoff:
-        'У каждого кубика шесть граней, кубиков пять — значит раскладов $6^5 = 7776$. И тут прежний приём ломается: тридцать шесть пар умещались на одной картинке, а нарисовать 7776 клеток в пяти измерениях невозможно.',
-      gate: { kind: 'roll', needed: 1 },
+        'У одного кубика шесть исходов. Добавишь второй — каждый из его шести исходов встаёт в пару с каждым из шести первого, выходит 6 × 6 = 36. Третий умножает ещё на шесть, и так далее — это **правило произведения**.\n[[$6 \\times 6 \\times 6 \\times 6 \\times 6 = 6^5 = 7776$ раскладов]]\nИ тут прежний приём ломается: 36 пар умещались в одну табличку 6×6, а для пяти костей такой таблице нужно пять осей. Перечислять 7776 раскладов руками бессмысленно — нужен счёт.',
+      gate: { kind: 'choice' },
     },
     {
       id: 'B2.2',
@@ -146,14 +148,14 @@ export const scene2: Scene = {
       scene: 'scene-2',
       prompt: 'Раз порядок не важен — посчитаем не расклады, а разные руки.',
       payoff:
-        '7776 упорядоченных раскладов схлопываются всего в 252 разные руки — это число $\\binom{6+5-1}{5} = 252$. Такую руку, «какие грани и сколько каждой, без порядка», называют **мультимножеством**, а для нас это просто **состояние**: рука стала одним объектом. Мы выбросили лишнее — порядок — и оставили только то, что влияет на игру.',
+        '7776 упорядоченных раскладов схлопываются всего в 252 разные руки. Такую руку — «какие грани и сколько каждой, без порядка» — называют **мультимножеством**, а для нас это просто **состояние**: рука стала одним объектом. Мы выбросили лишнее — порядок — и оставили только то, что влияет на игру. Откуда взялось ровно 252, мы аккуратно посчитаем чуть позже.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B2.4',
       scene: 'scene-2',
       prompt:
-        'Теперь рука — аккуратный объект, с которым можно работать. И впервые встаёт вопрос самой игры: чего эта рука стоит и что из неё оставить? Пора разобрать правила Yahtzee.',
+        'Теперь рука — аккуратный объект, и таких объектов 252. Но откуда взялось именно это число? Соберём счёт по косточкам — на шарах и коробках.',
     },
   ],
 }

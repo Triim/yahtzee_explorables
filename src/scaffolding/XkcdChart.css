@@ -1,0 +1,12 @@
+/* chart.xkcd renders the hand-drawn charts; the xkcd font (self-hosted, with
+   Cyrillic) is declared globally in index.css and passed to the library as its
+   fontFamily, so RU and EN labels render in the same sketch style as the prose. */
+.xkcd-chart {
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.xkcd-chart text {
+  user-select: none;
+}

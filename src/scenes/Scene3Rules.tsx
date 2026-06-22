@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
+import { useTr, XkcdChart, usePlayerState } from '@/scaffolding'
 import { Die } from '@/components'
 import './Rules.css'
+
+const ACCENT = '#059669'
 
 /* ============================================================
    Section 3 — Rules of Yahtzee and the combinations.
@@ -9,9 +12,13 @@ import './Rules.css'
    rarity (favorable hands out of 7776) shown on a scale.
    ============================================================ */
 
-const CATEGORIES = [
+const CATEGORIES_RU = [
   'Единицы', 'Двойки', 'Тройки', 'Четвёрки', 'Пятёрки', 'Шестёрки',
   'Тройка', 'Каре', 'Фулл-хаус', 'Малый стрейт', 'Большой стрейт', 'Yahtzee', 'Шанс',
+]
+const CATEGORIES_EN = [
+  'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes',
+  'Three of a kind', 'Four of a kind', 'Full house', 'Small straight', 'Large straight', 'Yahtzee', 'Chance',
 ]
 
 function counts(hand: number[]): number[] {
@@ -22,6 +29,25 @@ function counts(hand: number[]): number[] {
 
 function randHand(): number[] {
   return Array.from({ length: 5 }, () => ((Math.random() * 6) | 0) + 1)
+}
+
+/* Empirical histogram of "number of sixes per roll", built from the reader's
+   rolls; once enough rolls land, the theoretical B(5,1/6) is overlaid as dots. */
+function SixHist({ hist, rolls, tr }: { hist: number[]; rolls: number; tr: (ru: string, en: string) => string }) {
+  const data = [0, 1, 2, 3, 4, 5].map((k) => (rolls > 0 ? +((hist[k] / rolls) * 100).toFixed(1) : 0))
+  return (
+    <XkcdChart
+      type="Bar"
+      width={320}
+      height={190}
+      config={{
+        xLabel: tr('шестёрок', 'sixes'),
+        yLabel: '%',
+        data: { labels: ['0', '1', '2', '3', '4', '5'], datasets: [{ data }] },
+        options: { yTickCount: 3, dataColors: data.map(() => ACCENT) },
+      }}
+    />
+  )
 }
 
 /* Probability scale: favorable hands out of 7776. */
@@ -52,11 +78,17 @@ function Scale({ items }: { items: { label: string; fav: number; pct: string }[]
 
 export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
+  const tr = useTr()
+  const { record } = usePlayerState()
+  const cats = tr('ru', 'en') === 'en' ? CATEGORIES_EN : CATEGORIES_RU
   const [hand, setHand] = useState<number[]>([3, 1, 6, 1, 4])
   const [throwing, setThrowing] = useState(false)
   const [face, setFace] = useState<number | null>(null)
   const [tripleDone, setTripleDone] = useState(false)
   const [sw, setSw] = useState(0) // small-straight window 0..2
+  // B3.2A/B3.2B: tally of "number of sixes" across the reader's rolls
+  const [sixHist, setSixHist] = useState<number[]>([0, 0, 0, 0, 0, 0])
+  const [sixRolls, setSixRolls] = useState(0)
 
   // cycle small-straight windows
   useEffect(() => {
@@ -73,6 +105,26 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
     after?.(h)
   }
 
+  // roll five dice and tally how many sixes came up (B3.2A / B3.2B)
+  const rollSixes = () => {
+    setThrowing(true)
+    const h = randHand()
+    setHand(h)
+    window.setTimeout(() => setThrowing(false), 600)
+    const s = counts(h)[6]
+    setSixHist((prev) => {
+      const n = [...prev]
+      n[s]++
+      return n
+    })
+    setSixRolls((n) => {
+      const nn = n + 1
+      if (nn >= 12) satisfyGate?.()
+      return nn
+    })
+  }
+  const sixMean = sixRolls > 0 ? sixHist.reduce((a, k, i) => a + i * k, 0) / sixRolls : 0
+
   // Demo hands for the illustrative (gate-less) beats.
   const demo: Record<string, number[]> = {
     'B3.4': [5, 5, 5, 5, 2],
@@ -87,6 +139,7 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   let hi = new Set<number>()
   const c = counts(shown)
   if (beat === 'B3.2' && face) shown.forEach((v, i) => v === face && hi.add(i))
+  if (beat === 'B3.2A' || beat === 'B3.2B') shown.forEach((v, i) => v === 6 && hi.add(i))
   if (beat === 'B3.3') {
     const t = c.findIndex((n) => n >= 3)
     if (t > 0) shown.forEach((v, i) => v === t && hi.add(i))
@@ -117,16 +170,16 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
           <Die key={i} value={v} size={60} throwing={!isDemo && throwing} held={hi.has(i)} />
         ))}
       </div>
-      {isDemo && <p className="rules-demo">пример</p>}
+      {isDemo && <p className="rules-demo">{tr('пример', 'example')}</p>}
 
       {/* B3.1 — the 13-row scorecard */}
       {beat === 'B3.1' && (
         <>
           <button type="button" className="rules-btn" onClick={() => { roll(); satisfyGate?.() }}>
-            бросить
+            {tr('бросить', 'roll')}
           </button>
           <ol className="rules-card">
-            {CATEGORIES.map((name, i) => (
+            {cats.map((name, i) => (
               <li key={name} className={i === 5 ? 'card-divider' : ''}>{name}</li>
             ))}
           </ol>
@@ -149,9 +202,50 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
           </div>
           {face && (
             <p className="rules-readout">
-              {face}-к: сумма {c[face] * face} ({c[face]} шт.)
+              {face}{tr('-к', 's')}: {tr('сумма', 'sum')} {c[face] * face} ({c[face]} {tr('шт.', 'pcs')})
             </p>
           )}
+          {record && (
+            <p className="rules-readout">
+              {record.gotBonus
+                ? tr(`В своей партии верх ты добрал до ${record.upper} — бонус +35 твой.`, `In your game you reached ${record.upper} up top — the +35 bonus was yours.`)
+                : tr(`В своей партии ты набрал вверху ${record.upper} из 63 — бонус ускользнул.`, `In your game you scored ${record.upper} of 63 up top — the bonus slipped away.`)}
+            </p>
+          )}
+        </>
+      )}
+
+      {/* B3.2A — binomial: build the histogram of "number of sixes" from rolls */}
+      {beat === 'B3.2A' && (
+        <>
+          <button type="button" className="rules-btn" onClick={rollSixes}>
+            {tr('бросить', 'roll')}
+          </button>
+          {sixRolls > 0 && <SixHist hist={sixHist} rolls={sixRolls} tr={tr} />}
+          <p className="rules-readout">
+            {tr('бросков', 'rolls')}: {sixRolls} · {tr('сейчас шестёрок', 'sixes now')}: {c[6]}
+            {sixRolls >= 12 && tr(' · форма — это B(5, 1/6)', ' · the shape is B(5, 1/6)')}
+          </p>
+        </>
+      )}
+
+      {/* B3.2B — indicators and the running mean tending to 5/6 */}
+      {beat === 'B3.2B' && (
+        <>
+          <div className="rules-indicators">
+            {shown.map((v, i) => (
+              <span key={i} className={`rules-ind ${v === 6 ? 'rules-ind--on' : ''}`}>
+                {v === 6 ? 1 : 0}
+              </span>
+            ))}
+          </div>
+          <p className="rules-readout">
+            {tr('среднее шестёрок за бросок', 'mean sixes per roll')}:{' '}
+            <strong>{sixMean.toFixed(3)}</strong> → 5/6 ≈ 0{tr(',', '.')}833
+          </p>
+          <button type="button" className="rules-btn" onClick={rollSixes}>
+            {tr('перебросить', 'reroll')}
+          </button>
         </>
       )}
 
@@ -170,24 +264,24 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
               })
             }
           >
-            {tripleDone ? 'тройка собрана' : 'перебросить'}
+            {tripleDone ? tr('тройка собрана', 'triple done') : tr('перебросить', 'reroll')}
           </button>
-          <Scale items={[{ label: 'тройка', fav: 1656, pct: '≈21%' }]} />
+          <Scale items={[{ label: tr('тройка', 'three of a kind'), fav: 1656, pct: '≈21%' }]} />
         </>
       )}
 
       {beat === 'B3.4' && (
         <Scale items={[
-          { label: 'тройка', fav: 1656, pct: '≈21%' },
-          { label: 'каре', fav: 156, pct: '≈2%' },
+          { label: tr('тройка', 'three of a kind'), fav: 1656, pct: '≈21%' },
+          { label: tr('каре', 'four of a kind'), fav: 156, pct: '≈2%' },
         ]} />
       )}
-      {beat === 'B3.5' && <Scale items={[{ label: 'фулл-хаус', fav: 300, pct: '≈3,9%' }]} />}
-      {beat === 'B3.6' && <Scale items={[{ label: 'большой стрейт', fav: 240, pct: '≈3,1%' }]} />}
+      {beat === 'B3.5' && <Scale items={[{ label: tr('фулл-хаус', 'full house'), fav: 300, pct: tr('≈3,9%', '≈3.9%') }]} />}
+      {beat === 'B3.6' && <Scale items={[{ label: tr('большой стрейт', 'large straight'), fav: 240, pct: tr('≈3,1%', '≈3.1%') }]} />}
       {beat === 'B3.7' && (
         <Scale items={[
-          { label: 'большой', fav: 240, pct: '≈3,1%' },
-          { label: 'малый', fav: 1200, pct: '≈15%' },
+          { label: tr('большой', 'large'), fav: 240, pct: tr('≈3,1%', '≈3.1%') },
+          { label: tr('малый', 'small'), fav: 1200, pct: '≈15%' },
         ]} />
       )}
 
@@ -195,14 +289,16 @@ export function RulesModel({ activeBeatId, satisfyGate }: SceneModelProps) {
       {beat === 'B3.8' && (
         <>
           <button type="button" className="rules-btn" onClick={() => { roll(); satisfyGate?.() }}>
-            попробуй выбросить
+            {tr('попробуй выбросить', 'try to roll it')}
           </button>
-          <Scale items={[{ label: 'Yahtzee', fav: 6, pct: '≈0,08%' }]} />
+          <Scale items={[{ label: 'Yahtzee', fav: 6, pct: tr('≈0,08%', '≈0.08%') }]} />
         </>
       )}
 
       {beat === 'B3.9' && (
-        <p className="rules-readout">шанс: сумма {shown.reduce((a, b) => a + b, 0)} — подходит всегда</p>
+        <p className="rules-readout">
+          {tr('шанс', 'chance')}: {tr('сумма', 'sum')} {shown.reduce((a, b) => a + b, 0)} — {tr('подходит всегда', 'always applies')}
+        </p>
       )}
     </div>
   )
@@ -225,18 +321,35 @@ export const scene3: Scene = {
       id: 'B3.2',
       scene: 'scene-3',
       prompt:
-        'Верх проще некуда: шесть строк — от единиц до шестёрок. В строку «шестёрки» идёт сумма всех выпавших шестёрок, и только их. Выбери грань.',
+        'Верх проще некуда: шесть строк — от единиц до шестёрок. Правило у всех одно: в строку идёт сумма кубиков своей грани, и только их. Перебирай грани — увидишь, что строки устроены одинаково.',
       payoff:
-        'Насколько легко зацепить хоть одну шестёрку? От обратного: $P(0) = (5/6)^5 = 3125/7776$, значит хотя бы одна — $1 - 3125/7776 \\approx 0{,}60$. У верха есть награда: набери 63 — получишь +35. Откуда 63? По три кубика на грань: $3\\cdot(1+2+3+4+5+6)=63$. Запомни этот порог.',
+        'Возьмём для счёта шестёрки — для любой грани всё то же. Насколько легко зацепить хоть одну? Удобнее считать **от обратного** — через **противоположное событие** «ни одной шестёрки». У каждой из пяти костей по 5 «не-шестёрок», и по правилу произведения раскладов без единой шестёрки:\n$$5\\cdot5\\cdot5\\cdot5\\cdot5 = 5^5 = 3125$$\nДальше — та самая связка, что и на сетке 6×6: посчитали неблагоприятные исходы комбинаторикой, делим на все 7776 — получаем вероятность:\n$$P(0) = 3125/7776 \\approx 0{,}40, \\qquad P(\\ge 1) = 1 - 3125/7776 \\approx 0{,}60$$\nУ верха есть награда: набери в шести строках 63 очка — бонус +35. Порог 63 — это «средняя» норма, по три кубика на грань: $3\\cdot(1+2+3+4+5+6)=63$. Запомни его, он ещё вернётся.',
       gate: { kind: 'choice' },
+    },
+    {
+      id: 'B3.2A',
+      scene: 'scene-3',
+      prompt:
+        'А сколько шестёрок выпадет за бросок — 0, 1, 2, 3, 4 или 5? Это уже не «да/нет», а целая случайная величина. Бросай и копи столбики — сначала почувствуй форму.',
+      payoff:
+        'Столбики растут не наугад: чаще всего выпадает ноль или одна шестёрка, две — реже, а все пять почти никогда. Когда бросков набирается достаточно, гистограмма всякий раз ложится в одну и ту же форму — **биномиальное распределение** $B(5,\\ 1/6)$:\n$$P(k) = \\binom{5}{k}\\left(\\tfrac16\\right)^{k}\\left(\\tfrac56\\right)^{5-k}$$\nЧитается так: $\\binom{5}{k}$ — сколькими способами выбрать, какие именно $k$ из пяти костей легли шестёрками; $\\left(\\tfrac16\\right)^{k}$ — что они шестёрки; $\\left(\\tfrac56\\right)^{5-k}$ — что остальные нет. А $B(n,p)$ — это просто «$n$ независимых попыток, в каждой успех с вероятностью $p$».',
+      gate: { kind: 'roll', needed: 12 },
+    },
+    {
+      id: 'B3.2B',
+      scene: 'scene-3',
+      prompt: 'А сколько шестёрок в среднем? Брось несколько раз и следи за бегущим средним.',
+      payoff:
+        'Заведём на каждую кость **индикатор**: 1, если выпала шестёрка, иначе 0. Среднее одного индикатора — ровно его доля, $1/6$. Бегущее среднее числа шестёрок оседает на $5/6 \\approx 0{,}83$ — и это в точности сумма пяти средних:\n$$E = \\tfrac16 + \\tfrac16 + \\tfrac16 + \\tfrac16 + \\tfrac16 = 5\\cdot\\tfrac16 = \\tfrac56$$\nСреднее суммы равно сумме средних — даже не зная всего распределения. Это **линейность ожидания**, и дальше она станет главным рабочим инструментом.',
+      gate: { kind: 'roll', needed: 1 },
     },
     {
       id: 'B3.3',
       scene: 'scene-3',
       prompt:
-        'Низ — это комбинации. Первая, самая лёгкая: три одинаковых. За неё пишут сумму всех пяти кубиков. Собери тройку.',
+        'Низ — это комбинации. Первая, самая лёгкая: три одинаковых. За неё пишут сумму всех пяти кубиков. Бросай всю руку заново — без удержания — пока три одинаковых не выпадут сами.',
       payoff:
-        'Часто ли три одинаковых выпадают сразу? Ровно три: $6\\cdot C(5,3)\\cdot 25 = 1500$; ровно четыре: $150$; все пять: $6$. Вместе 1656 из 7776 — около 21%, примерно каждый пятый бросок.',
+        'Часто ли три одинаковых выпадают сами? Считаем благоприятные руки. Ровно три одинаковых: грань тройки — 6, какие три кубика из пяти — $C(5,3)=10$, две оставшиеся кости — любые из пяти других граней, $5^2=25$. Выходит\n$$6\\cdot10\\cdot25 = 1500.$$\nПрибавим редкие руки, где совпавших ещё больше, — всего 1656 из 7776, около 21%: примерно каждый пятый бросок.',
       gate: { kind: 'roll', needed: 1 },
     },
     {
@@ -267,14 +380,14 @@ export const scene3: Scene = {
       prompt:
         'Четыре подряд — малый стрейт, 30 очков. Тут окон уже три: 1–4, 2–5, 3–6.',
       payoff:
-        'Окна пересекаются, просто сложить нельзя. По 480 на окно, но руки с пятью подряд попадают в два окна разом — их вычитаем: $3\\cdot480 - 240 = 1200$ из 7776, около 15%. Это формула включений-исключений: сложили, потом убрали двойной счёт.',
+        'Окна пересекаются, просто сложить нельзя. По 480 на окно, но руки с пятью подряд попадают в два окна разом — их вычитаем: $3\\cdot480 - 240 = 1200$ из 7776, около 15%. Это **формула включений-исключений**: сложили, потом убрали двойной счёт.',
     },
     {
       id: 'B3.8',
       scene: 'scene-3',
       prompt: 'И вершина — пять одинаковых, Yahtzee, 50 очков. Попробуй собрать за ход.',
       payoff:
-        'Благоприятных рук всего шесть — по одной на грань: 6 из 7776 = 1/1296, около 0,08%. Самая редкая комбинация; оттого за неё 50 очков и особый бонус +100 за каждый повтор.',
+        'Благоприятных рук всего шесть — по одной на каждую грань. Значит, любой Yahtzee за один бросок — это $6/7776 \\approx 0{,}077\\%$ (то же самое, что $1/1296$). А вот конкретная пятёрка одинаковых — скажем, пять шестёрок — ещё вшестеро реже: $1/7776$. Самая редкая комбинация; оттого за неё 50 очков и бонус +100 за каждый повтор.',
       gate: { kind: 'roll', needed: 1 },
     },
     {

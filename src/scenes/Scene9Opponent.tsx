@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
+import { useTr } from '@/scaffolding'
 import './Opponent.css'
 
 /* ============================================================
@@ -22,7 +23,7 @@ function pAbove(T: number, mu: number, sigma: number): number {
 
 const DOMAIN: [number, number] = [60, 360]
 
-function NormalCurve({ mu, sigma, threshold }: { mu: number; sigma: number; threshold: number }) {
+function NormalCurve({ mu, sigma, threshold, label }: { mu: number; sigma: number; threshold: number; label: string }) {
   const W = 340
   const H = 170
   const [x0, x1] = DOMAIN
@@ -46,16 +47,28 @@ function NormalCurve({ mu, sigma, threshold }: { mu: number; sigma: number; thre
 
   return (
     <svg width={W} height={H} className="op-curve" role="img">
-      {areaPath && <path d={areaPath} className="op-area" />}
-      <polyline points={line} className="op-line" fill="none" />
-      <line x1={px(threshold)} y1={8} x2={px(threshold)} y2={H - 12} className="op-threshold" />
-      <text x={px(threshold) + 4} y={18} className="op-threshold-label">соперник</text>
+      {/* hand-drawn "xkcd" wobble, to match the chart.xkcd bar charts */}
+      <defs>
+        <filter id="op-rough">
+          <feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="3" seed="2" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+        </filter>
+      </defs>
+      <g filter="url(#op-rough)">
+        {areaPath && <path d={areaPath} className="op-area" />}
+        <polyline points={line} className="op-line" fill="none" />
+        <line x1={px(threshold)} y1={8} x2={px(threshold)} y2={H - 12} className="op-threshold" />
+      </g>
+      <text x={px(threshold) + 4} y={18} className="op-threshold-label" style={{ fontFamily: 'var(--hand)' }}>
+        {label}
+      </text>
     </svg>
   )
 }
 
 export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
+  const tr = useTr()
   const [duel, setDuel] = useState<[number, number] | null>(null)
   const [winObjective, setWinObjective] = useState(false)
   const [risk, setRisk] = useState(20)
@@ -77,11 +90,11 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
         <div className="op-duel">
           <div className="op-player">
             <span className="op-player-num">{mine ?? '—'}</span>
-            <span className="op-player-name">ты</span>
+            <span className="op-player-name">{tr('ты', 'you')}</span>
           </div>
           <div className="op-player">
             <span className="op-player-num">{theirs ?? '—'}</span>
-            <span className="op-player-name">соперник</span>
+            <span className="op-player-name">{tr('соперник', 'opponent')}</span>
           </div>
         </div>
         <button
@@ -91,9 +104,9 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
             satisfyGate?.()
           }}
         >
-          сыграть ход рядом
+          {tr('сыграть ход рядом', 'play a turn side by side')}
         </button>
-        <p className="op-note">его случай и твой — независимы</p>
+        <p className="op-note">{tr('его случай и твой — независимы', 'his chance and yours are independent')}</p>
       </div>
     )
   }
@@ -106,13 +119,22 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
           className={`op-toggle ${winObjective ? 'op-toggle--win' : ''}`}
           onClick={() => { setWinObjective((v) => !v); satisfyGate?.() }}
         >
-          {winObjective ? 'максимум P(победы)' : 'максимум среднего'}
+          {winObjective ? tr('максимум P(победы)', 'maximize P(win)') : tr('максимум среднего', 'maximize the average')}
         </button>
         <div className="op-move">
-          рекомендуемый ход:
-          <strong>{winObjective ? ' идти на стрейт (рискованно)' : ' записать «шестёрки» (надёжно)'}</strong>
+          {tr('рекомендуемый ход:', 'recommended move:')}
+          <strong>
+            {winObjective
+              ? tr(' идти на стрейт (рискованно)', ' go for the straight (risky)')
+              : tr(' записать «шестёрки» (надёжно)', ' score “sixes” (safe)')}
+          </strong>
         </div>
-        <p className="op-note">тот же бросок — а лучший ход стал другим. Сменился критерий, не игра.</p>
+        <p className="op-note">
+          {tr(
+            'тот же бросок — а лучший ход стал другим. Сменился критерий, не игра.',
+            'the same roll — yet the best move changed. The criterion changed, not the game.'
+          )}
+        </p>
       </div>
     )
   }
@@ -124,7 +146,7 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
     const p = pAbove(T, mu, sigma)
     return (
       <div className="op-model">
-        <NormalCurve mu={mu} sigma={sigma} threshold={T} />
+        <NormalCurve mu={mu} sigma={sigma} threshold={T} label={tr('соперник', 'opponent')} />
         <input
           type="range"
           min={0}
@@ -134,9 +156,11 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
           className="op-slider"
         />
         <p className="op-readout">
-          σ ≈ {sigma.toFixed(0)} · μ ≈ {mu.toFixed(0)} · P({behind ? 'обогнать' : 'удержать'}) ≈ {p.toFixed(2)}
+          σ ≈ {sigma.toFixed(0)} · μ ≈ {mu.toFixed(0)} · P({behind ? tr('обогнать', 'overtake') : tr('удержать', 'hold')}) ≈ {p.toFixed(2)}
         </p>
-        <p className="op-note">{behind ? 'отстаёшь — поднимай σ' : 'ведёшь — опускай σ'}</p>
+        <p className="op-note">
+          {behind ? tr('отстаёшь — поднимай σ', 'behind — raise σ') : tr('ведёшь — опускай σ', 'leading — lower σ')}
+        </p>
       </div>
     )
   }
@@ -168,8 +192,15 @@ export function OpponentModel({ activeBeatId, satisfyGate }: SceneModelProps) {
         onChange={(e) => { setRemaining(+e.target.value); satisfyGate?.() }}
         className="op-slider"
       />
-      <p className="op-readout">осталось ходов: {remaining} · разброс ≈ {spread.toFixed(0)} (∝ √ходов)</p>
-      <p className="op-note">соперника по-настоящему читаешь к концу — решать поздно, зато точно</p>
+      <p className="op-readout">
+        {tr('осталось ходов', 'turns left')}: {remaining} · {tr('разброс', 'spread')} ≈ {spread.toFixed(0)} {tr('(∝ √ходов)', '(∝ √turns)')}
+      </p>
+      <p className="op-note">
+        {tr(
+          'соперника по-настоящему читаешь к концу — решать поздно, зато точно',
+          'you only truly read the opponent near the end — late to act, but accurate'
+        )}
+      </p>
     </div>
   )
 }
@@ -184,7 +215,7 @@ export const scene9: Scene = {
       prompt:
         'До сих пор ты играл один против таблицы. Посади рядом соперника: он бросает свои кубики, ты — свои. Ты никак не влияешь на его случай, он — на твой. Сыграй ход рядом.',
       payoff:
-        'Заметь: математика кубиков не изменилась ни на йоту — те же вероятности, те же ценности из прошлых разделов. Изменилось другое — и это самое важное во всей игре.',
+        'Заметь: математика кубиков не изменилась ни на йоту — те же вероятности и ценности, что и раньше. Изменилось другое — и это самое важное во всей игре.',
       gate: { kind: 'choice' },
     },
     {
@@ -210,7 +241,7 @@ export const scene9: Scene = {
       scene: 'scene-9',
       prompt: 'Теперь наоборот — ты ведёшь. Тот же ход? Сузь риск.',
       payoff:
-        'Нет. Сужай разброс. Тебе не нужен рекорд — нужно не дать сопернику случайно перепрыгнуть. Узкое, надёжное распределение добивает партию. Ведёшь — опускай σ. Та же дисперсия из Раздела 8 стала оружием, и направление зависит от того, впереди ты или позади.',
+        'Нет. Сужай разброс. Тебе не нужен рекорд — нужно не дать сопернику случайно перепрыгнуть. Узкое, надёжное распределение добивает партию. Ведёшь — опускай σ. Тот самый разброс σ, что прежде отличал характеры стратегий, теперь стал оружием, и направление зависит от того, впереди ты или позади.',
       gate: { kind: 'slider' },
     },
     {
@@ -219,7 +250,7 @@ export const scene9: Scene = {
       prompt:
         'Насколько вообще предсказуем итог соперника? Зависит от того, сколько ходов ему осталось. Подвигай число оставшихся ходов.',
       payoff:
-        'В начале партии итог соперника размыт широкой воронкой — впереди ещё много случайных ходов. Чем меньше ходов осталось, тем уже воронка: разброс падает примерно как $\\sqrt{\\text{осталось ходов}}$. Поэтому соперника по-настоящему читаешь к концу.',
+        'В начале партии итог соперника размыт широкой воронкой — впереди ещё много случайных ходов. Чем меньше ходов осталось, тем уже воронка:\n[[$\\sigma \\propto \\sqrt{\\text{осталось ходов}}$]]\nРазброс падает примерно как корень из числа оставшихся ходов. Поэтому соперника по-настоящему читаешь к концу.',
       gate: { kind: 'slider' },
     },
     {

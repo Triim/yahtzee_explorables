@@ -126,3 +126,23 @@
   text-align: center;
   max-width: 28rem;
 }
+
+/* B4.5A — Yahtzee-per-turn readout */
+.rr-yah {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.rr-yah-num {
+  font-family: var(--hand);
+  font-size: 2.8rem;
+  color: var(--accent);
+}
+
+.rr-yah-label {
+  font-family: var(--hand);
+  font-size: 1rem;
+  color: var(--text-muted);
+}

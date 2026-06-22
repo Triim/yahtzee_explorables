@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
+import { useTr } from '@/scaffolding'
 import { Die } from '@/components'
 import './RandomVariable.css'
+
+const ROW_NAMES_EN = [
+  'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes',
+  'Three of a kind', 'Four of a kind', 'Full house', 'Chance',
+]
 
 /* ============================================================
    Section 5 — Random variable and expectation.
@@ -55,6 +61,7 @@ function PathCard({
 
 export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
+  const tr = useTr()
   const [written, setWritten] = useState<Set<number>>(new Set())
   const [path, setPath] = useState<'now' | 'reroll' | null>(null)
 
@@ -73,7 +80,12 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
     return (
       <div className="rv-model">
         <div className="rv-formula-big">E[X] = Σ x · P(x)</div>
-        <p className="rv-note">каждый исход, умноженный на свою вероятность — средняя добыча хода</p>
+        <p className="rv-note">
+          {tr(
+            'каждый исход, умноженный на свою вероятность — средняя добыча хода',
+            'each outcome times its probability — the average haul of a turn'
+          )}
+        </p>
       </div>
     )
   }
@@ -101,7 +113,7 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
                   })
                 }}
               >
-                <span>{row.name}</span>
+                <span>{tr(row.name, ROW_NAMES_EN[i])}</span>
                 <span className="rv-row-score">{row.score(hand)}</span>
               </button>
             </li>
@@ -112,16 +124,16 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
       {beat === 'B5.2' && (
         <div className="rv-paths">
           <PathCard
-            title="писать тройку сейчас"
+            title={tr('писать тройку сейчас', 'score the triple now')}
             value="15"
-            sub="4+4+4+2+1 наверняка"
+            sub={tr('4+4+4+2+1 наверняка', '4+4+4+2+1 for sure')}
             on={path === 'now'}
             onClick={() => { setPath('now'); satisfyGate?.() }}
           />
           <PathCard
-            title="перебросить 2 и 1"
+            title={tr('перебросить 2 и 1', 'reroll the 2 and 1')}
             value="≈ 19"
-            sub="12 + в среднем 7 (2 × 3,5)"
+            sub={tr('12 + в среднем 7 (2 × 3,5)', '12 + 7 on average (2 × 3.5)')}
             on={path === 'reroll'}
             onClick={() => { setPath('reroll'); satisfyGate?.() }}
           />
@@ -131,16 +143,16 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
       {beat === 'B5.3' && (
         <div className="rv-paths">
           <PathCard
-            title="записать «шестёрки»"
-            value="12"
-            sub="две шестёрки наверняка"
+            title={tr('держать 6·6 → каре', 'keep 6·6 → four of a kind')}
+            value="≈ 13"
+            sub={tr('каре редко — чаще останешься с 12 за шестёрки', 'four of a kind is rare — usually you keep 12 for sixes')}
             on={path === 'now'}
             onClick={() => { setPath('now'); satisfyGate?.() }}
           />
           <PathCard
-            title="к стрейту 2·3·4"
+            title={tr('держать 2·3·4 → стрейт', 'keep 2·3·4 → straight')}
             value="≈ 17"
-            sub="0,56 · 30 за переброс, и их два"
+            sub={tr('≈0,56 на малый стрейт 30 за переброс, и их два', '≈0.56 for a small straight 30 per reroll, and there are two')}
             on={path === 'reroll'}
             onClick={() => { setPath('reroll'); satisfyGate?.() }}
           />
@@ -158,7 +170,7 @@ export const scene5: Scene = {
       id: 'B5.1',
       scene: 'scene-5',
       prompt:
-        'Каждая рука превращается в очки по правилу строки. Запиши одну и ту же руку в разные строки — и очки выйдут разные.',
+        'Та же рука 4·4·4·2·1 стоит по-разному в разных строках. Нажми на несколько строк в таблице — увидишь, какие очки она даёт в каждой.',
       payoff:
         'Очки — это функция от руки и строки: $\\text{score} = f(\\text{рука}, \\text{строка})$. А пока ты ещё не бросил, рука случайна — и будущие очки тоже: это число, которое зависит от того, что выпадет. Такую величину называют **случайной**.',
       gate: { kind: 'choice' },
@@ -167,18 +179,18 @@ export const scene5: Scene = {
       id: 'B5.2',
       scene: 'scene-5',
       prompt:
-        'На руках 4·4·4·2·1 — три четвёрки. Записать тройку сейчас или перебросить два младших кубика?',
+        'На руках 4·4·4·2·1 — три четвёрки. Записать тройку сейчас или перебросить два младших кубика? Сравни два пути.',
       payoff:
-        'Тройку ты не теряешь — три четвёрки остаются, весь вопрос в сумме. Сейчас 15. Перебросишь 2 и 1 — каждый кубик в среднем даёт 3,5, два — 7. Держишь 12, добавляешь 7 → 19. Девятнадцать в среднем против пятнадцати наверняка, и сверху шанс на четвёртую четвёрку. Перебрасывать выгоднее.',
+        'Тройку ты не теряешь в любом случае — три четвёрки остаются, весь вопрос в сумме. Считаем по шагам:\n[[сейчас: $4+4+4+2+1 = 15$ наверняка]]\n[[переброс: держишь $12$, два кубика в среднем дают $2\\cdot3{,}5 = 7$ → $12 + 7 = 19$]]\nДевятнадцать в среднем против пятнадцати наверняка — и сверху ещё шанс на четвёртую четвёрку. Перебрасывать выгоднее.',
       gate: { kind: 'choice' },
     },
     {
       id: 'B5.3',
       scene: 'scene-5',
       prompt:
-        'Ловушка. Рука 6·6·2·3·4. Тянет записать «шестёрки», 12 очков. Лучший ли это ход? Посмотри второй вариант.',
+        'Та же развилка 6·6·2·3·4, но теперь — по деньгам. Что выгоднее оставлять: пару шестёрок под каре или 2·3·4 под большой стрейт? Сравни ценности.',
       payoff:
-        'Двенадцать выглядят солидно. Но 2·3·4 — три подряд, до малого стрейта не хватает одного кубика. Перебрось две шестёрки: поймать единицу или пятёрку — $1 - (4/6)^2 \\approx 0{,}56$, это уже $0{,}56\\cdot30 \\approx 17$, больше двенадцати, — а перебросов два, и маячит большой стрейт в 40. Глаз цепляется за крупные кубики; число смотрит на всю руку.',
+        'Глаз цепляется за крупные шестёрки, но каре из них — редкость: чаще удержишь лишь 12 за «шестёрки», и вся затея стоит около 13. А 2·3·4 — три подряд, до малого стрейта не хватает одного кубика:\n[[поймать единицу или пятёрку: $1 - (4/6)^2 \\approx 0{,}56$]]\n[[$0{,}56\\cdot30 \\approx 17$ за переброс, а перебросов два, и маячит большой стрейт на 40]]\nОставлять стоит 2·3·4, а не шестёрки. Глаз цепляется за крупные кубики; ценность смотрит на всю руку.',
       gate: { kind: 'choice' },
     },
     {
@@ -186,7 +198,7 @@ export const scene5: Scene = {
       scene: 'scene-5',
       prompt: 'То, что мы оба раза считали, и есть ответ на вопрос «что выгоднее».',
       payoff:
-        '**Математическое ожидание**: $E[X] = \\sum x\\cdot P(x)$ — каждый исход, умноженный на свою вероятность, всё сложено. Это средняя добыча хода. Но ожидание выбирает лучший ход в одном броске. А партия — тринадцать ходов, и каждая строка закрывается навсегда. Достаточно ли смотреть на один ход?',
+        'Это **математическое ожидание** — каждый исход, умноженный на свою вероятность, и всё сложено:\n[[$E[X] = \\sum x\\cdot P(x)$]]\nПростейший пример — цена одной кости: каждая грань 1…6 выпадает с долей $1/6$, складываем $x\\cdot P(x)$:\n[[$1\\cdot\\tfrac16 + 2\\cdot\\tfrac16 + \\dots + 6\\cdot\\tfrac16 = \\dfrac{1+2+3+4+5+6}{6} = 3{,}5$]]\nИменно эти $3{,}5$ за кубик мы и подставляли в перебросах. А когда взвешивали холды, считали $E[\\text{очки}\\mid\\text{оставленные}]$ — **условное ожидание**, и оно движет выбором. Но ожидание выбирает лучший ход в одном броске. А партия — тринадцать ходов, и каждая строка закрывается навсегда. Достаточно ли смотреть на один ход?',
     },
     {
       id: 'B5.5',

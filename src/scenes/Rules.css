@@ -126,3 +126,31 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* B3.2B — indicator lamps (1 if a six, else 0) */
+.rules-indicators {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rules-ind {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  font-family: var(--hand);
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.rules-ind--on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* (sixes histogram B3.2A is drawn through XkcdChart) */

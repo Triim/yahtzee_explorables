@@ -41,7 +41,9 @@ self.onmessage = (event: MessageEvent<SimulationRequest>) => {
   }
 
   try {
-    const { scores, stats } = runTournament(strategyName, strategy, trials)
+    const { scores, stats } = runTournament(strategyName, strategy, trials, (done, total) => {
+      self.postMessage({ id, type: 'progress', done, total })
+    })
 
     const result: SimulationResult = {
       id,

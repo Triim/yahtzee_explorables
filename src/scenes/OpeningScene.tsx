@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
+import { useTr } from '@/scaffolding'
 import { Die, useDieRoll } from '@/components'
 import './HeroModel.css'
 
@@ -32,6 +33,7 @@ function ThrownDie({ initial, rollToken, delay }: { initial: number; rollToken: 
  * throw. The narrative lives in the left column; the model only answers it.
  */
 export function HeroModel({ satisfyGate }: SceneModelProps) {
+  const tr = useTr()
   const [rollToken, setRollToken] = useState(0)
   const [busy, setBusy] = useState(false)
 
@@ -50,12 +52,13 @@ export function HeroModel({ satisfyGate }: SceneModelProps) {
         className="hand"
         onClick={throwAll}
         disabled={busy}
-        aria-label="Подбросить кубики"
+        aria-label={tr('Подбросить кубики', 'Toss the dice')}
       >
         {DICE.map((face, i) => (
           <ThrownDie key={i} initial={face} rollToken={rollToken} delay={i * 70} />
         ))}
       </button>
+      <span className="hero-model-hint">{tr('нажми на кубики — бросок', 'tap the dice to roll')}</span>
     </div>
   )
 }
@@ -68,16 +71,16 @@ export const openingScene: Scene = {
       id: 'INT.1',
       scene: 'opening',
       prompt:
-        'Пять кубиков, тринадцать ходов, лист для записи очков — вот и весь Yahtzee. Игра, которой учат за минуту.',
+        'Вот они, пять кубиков. Бросаешь — и любые можешь дважды перекинуть, чтобы собрать комбинацию повыше: пару, тройку, стрейт. Что вышло, записываешь в одну из тринадцати строк. Тринадцать ходов, и у кого больше очков, тот выиграл. Подбрось.',
       payoff:
-        'Но стоит присмотреться — и за простыми правилами встаёт вопрос за вопросом, на которые арифметики уже не хватает.',
+        'Правила и правда на минуту. Но стоит спросить «а как сыграть лучше?» — и за простой костью встаёт вопрос за вопросом, на которые арифметики не хватает.',
       gate: { kind: 'roll', needed: 1 },
     },
     {
       id: 'INT.2',
       scene: 'opening',
       prompt:
-        'Каждый раз, когда заканчивается один кусок математики, игра подсовывает следующий. Начнём не с пяти кубиков и даже не с одного — с самого простого, что вообще бывает случайным.',
+        'Но прежде чем разбираться, как играть лучше, стоит просто сыграть — освоить правила руками. Бери пять кубиков и проведи свою первую партию.',
     },
   ],
 }

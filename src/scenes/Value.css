@@ -93,9 +93,9 @@
 }
 
 .val-node--cold {
-  background: rgba(14, 165, 233, 0.12);
-  border-color: #0ea5e9;
-  color: #0369a1;
+  background: rgba(202, 138, 4, 0.14);
+  border-color: #ca8a04;
+  color: #854d0e;
 }
 
 .val-edge {
@@ -122,13 +122,130 @@
 }
 
 .dot--cold {
-  background: #0ea5e9;
+  background: #ca8a04;
+}
+
+/* ---- B7.3 branching chance/choice tree ---- */
+.vg-edge {
+  stroke: var(--border-color);
+  stroke-width: 2;
+  transition: stroke 0.25s ease;
+}
+
+.vg-edge--max {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.vg-node {
+  fill: var(--panel-bg);
+  stroke: var(--border-color);
+  stroke-width: 2;
+  transition: fill 0.25s ease, stroke 0.25s ease;
+}
+
+.vg-node--hot {
+  fill: rgba(239, 68, 68, 0.12);
+  stroke: #ef4444;
+}
+
+.vg-node--cold {
+  fill: rgba(202, 138, 4, 0.14);
+  stroke: #ca8a04;
+}
+
+.vg-node--leaf {
+  fill: var(--bg);
+  stroke: var(--text-muted);
+}
+
+.vg-node--on {
+  stroke-width: 3;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.18));
+}
+
+.vg-node-l1,
+.vg-node-l2 {
+  font-family: var(--hand);
+  text-anchor: middle;
+  fill: var(--text-color);
+}
+
+.vg-node-l1 {
+  font-size: 13px;
+}
+
+.vg-node-l2 {
+  font-size: 12px;
+  fill: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vg-grow {
+  animation: vgGrow 0.4s ease both;
+  transform-origin: left center;
+}
+
+@keyframes vgGrow {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vg-grow {
+    animation: none;
+  }
 }
 
 /* backward induction chain */
 .val-chain {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* backward-induction turn cells: value on top, turn number below */
+.val-turn {
+  width: 30px;
+  height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.val-turn-v {
+  font-family: var(--hand);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-height: 0.9rem;
+}
+
+.val-turn-n {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.val-turn--on {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+
+.val-turn--cur {
+  border-color: var(--text-h);
+  box-shadow: 0 0 0 2px var(--accent-bg);
 }
 
 .val-slot {

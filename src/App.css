@@ -75,19 +75,77 @@ body,
 
 .beat-prompt {
   margin: 0;
-  font-size: 1.3rem;
-  line-height: 1.55;
+  font-family: var(--hand);
+  font-size: 1.5rem;
+  line-height: 1.5;
   color: var(--text-h);
 }
 
 .beat-payoff {
   margin: 1.25rem 0 0 0;
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-family: var(--hand);
+  font-size: 1.2rem;
+  line-height: 1.55;
   color: var(--text-color);
   padding-top: 1rem;
   border-top: 2px solid var(--accent-border);
   animation: payoffIn 0.5s ease-out;
+}
+
+/* The xkcd font has no bold weight, and the project disables font synthesis — so
+   key terms (**bold**) are emphasised with the accent colour plus allowed
+   synthetic weight, keeping the emphasis visible in the handwriting font. */
+.beat-prompt strong,
+.beat-payoff strong {
+  color: var(--accent);
+  font-weight: 700;
+  font-synthesis: weight;
+}
+
+/* ---- Definitions & formulas set apart from the prose ----
+   A definition callout ([[ … ]]) and a display formula ($$ … $$) each break onto
+   their own line inside a payoff, highlighted so the key idea stands out from the
+   surrounding handwriting. */
+.rt-callout {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.7rem 1rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  line-height: 1.5;
+}
+
+.rt-callout strong {
+  color: var(--accent);
+}
+
+/* Display formulas (their own line) get the same highlight; inline ones don't. */
+.beat-payoff .formula-block,
+.beat-prompt .formula-block,
+.rt-callout .formula-block {
+  display: block;
+  margin: 0.6rem 0 0.2rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* A display formula sitting directly in prose (not nested in a callout). */
+.beat-payoff > .rt-display.formula-block,
+.beat-prompt > .rt-display.formula-block {
+  margin: 1rem auto;
+}
+
+/* Inside a callout the formula shares the callout's tint — drop the inner box. */
+.rt-callout .formula-block {
+  margin: 0.4rem 0 0 0;
+  padding: 0;
+  background: none;
+  text-align: left;
 }
 
 .beat-cue {
@@ -99,11 +157,12 @@ body,
   opacity: 0.85;
 }
 
+/* Scroll cue: when the way forward is to scroll, this accent chevron pulses. */
 .beat-chevron {
   display: block;
   margin: 1.75rem auto 0 auto;
-  color: var(--text-muted);
-  animation: chevronBob 1.6s ease-in-out infinite;
+  color: var(--accent);
+  animation: chevronBob 1.4s ease-in-out infinite;
 }
 
 /* Gating: beats past the first unsatisfied gate collapse out of the document,
@@ -131,11 +190,11 @@ body,
 @keyframes chevronBob {
   0%,
   100% {
-    transform: translateY(0);
-    opacity: 0.5;
+    transform: translateY(0) scale(1);
+    opacity: 0.55;
   }
   50% {
-    transform: translateY(4px);
+    transform: translateY(7px) scale(1.18);
     opacity: 1;
   }
 }
@@ -167,11 +226,107 @@ body,
   opacity: 0;
   transform: translateX(28px);
   transition: opacity 0.55s ease-out, transform 0.55s ease-out;
+  /* Every model shares the hand-drawn font — including buttons, which the global
+     reset would otherwise leave in the sans family (the source of the mismatch). */
+  font-family: var(--hand);
+}
+
+.scene-stage-inner button,
+.scene-stage-inner input,
+.scene-stage-inner label {
+  font-family: var(--hand);
+}
+
+/* ---- Call-to-action pulse: while the active beat's gate is unsatisfied, the
+   model's primary controls pulse so it's obvious where to act. ---- */
+.scene-stage--await .hand:not(:disabled),
+.scene-stage--await .act-btn:not(:disabled),
+.scene-stage--await .coin-btn:not(:disabled),
+.scene-stage--await .die-btn:not(:disabled),
+.scene-stage--await .sum-btn:not(:disabled),
+.scene-stage--await .fds-btn:not(:disabled),
+.scene-stage--await .rules-btn:not(:disabled),
+.scene-stage--await .rr-btn:not(:disabled),
+.scene-stage--await .lin-btn:not(:disabled),
+.scene-stage--await .bonus-btn:not(:disabled),
+.scene-stage--await .val-btn:not(:disabled),
+.scene-stage--await .st-btn:not(:disabled),
+.scene-stage--await .strat-btn:not(:disabled),
+.scene-stage--await .op-btn:not(:disabled),
+.scene-stage--await .sy-btn:not(:disabled),
+.scene-stage--await .fair-btn:not(:disabled),
+.scene-stage--await .mset-toggle:not(:disabled),
+.scene-stage--await .op-toggle:not(:disabled) {
+  animation: ctaPulse 1.5s ease-in-out infinite;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Slider gates: the track itself pulses (the action is to drag it). */
+.scene-stage--await input[type='range'] {
+  animation: ctaPulseSoft 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes ctaPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-bg);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 7px transparent;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes ctaPulseSoft {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-bg);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-stage--await .act-btn,
+  .scene-stage--await .coin-btn,
+  .scene-stage--await .die-btn,
+  .scene-stage--await .sum-btn,
+  .scene-stage--await .fds-btn,
+  .scene-stage--await .rules-btn,
+  .scene-stage--await .rr-btn,
+  .scene-stage--await .lin-btn,
+  .scene-stage--await .bonus-btn,
+  .scene-stage--await .val-btn,
+  .scene-stage--await .st-btn,
+  .scene-stage--await .strat-btn,
+  .scene-stage--await .op-btn,
+  .scene-stage--await .sy-btn,
+  .scene-stage--await .fair-btn,
+  .scene-stage--await .mset-toggle,
+  .scene-stage--await .op-toggle,
+  .scene-stage--await input[type='range'] {
+    animation: none;
+  }
 }
 
 .scene-stage.is-revealed .scene-stage-inner {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* Global size lever: every model scales up uniformly around its centre.
+   Vector (SVG) and DOM scale crisply; tune --model-scale to taste. */
+.scene-stage {
+  --model-scale: 1.32;
+}
+
+.scene-stage-inner > * {
+  transform: scale(var(--model-scale));
+  transform-origin: center;
 }
 
 /* ---- Hero: a full-screen title CUT along the vertical pane seam ----
@@ -221,10 +376,11 @@ body,
   max-width: 92vw;
   text-align: center;
   margin: 0;
-  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-family: var(--hand);
+  font-size: clamp(3.2rem, 8.5vw, 6rem);
   line-height: 1.05;
   color: var(--text-h);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .hero-sub {
@@ -232,11 +388,12 @@ body,
   top: 50%;
   left: var(--split);
   transform: translateX(-50%);
-  margin-top: 4.25rem;
+  margin-top: 4.75rem;
   width: min(34rem, 80vw);
   text-align: center;
-  font-size: 1.2rem;
-  line-height: 1.6;
+  font-family: var(--hand);
+  font-size: 1.45rem;
+  line-height: 1.5;
   color: var(--text-muted);
 }
 
@@ -267,77 +424,230 @@ body,
   }
 }
 
-/* ---- Navigation rail ---- */
-.nav {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 50;
-  font-size: 0.9rem;
+/* ---- Per-section hero: title cut along the seam, lifts as you scroll ----
+   Spacers (in the scroll flow) give the lift its distance; one fixed curtain
+   reads the active spacer and animates --p (0 = covering, 1 = lifted away). */
+.s-hero-spacer {
+  /* one viewport tall, so the curtain finishes lifting exactly as the section's
+     first beat reaches the fold (no gap showing the previous model). */
+  height: 100vh;
+  pointer-events: none;
 }
 
-.nav-toggle {
+.s-hero {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  --split: 40%;
+  --pl: 0;
+  --pr: 0;
+  transition: opacity 0.12s linear;
+}
+
+.s-hero-half {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* Two-step split. --pl/--pr are signed offsets: +1 = off-screen below, 0 =
+   covering, −1 = off-screen above. Each half rises up from below to assemble
+   the title, then lifts off the top to disassemble it — the same gesture as
+   the opening hero, but in two steps each way. */
+.s-hero-half--left {
+  background: var(--bg);
+  clip-path: inset(0 calc(100% - var(--split)) 0 0);
+  box-shadow: inset -1px 0 0 var(--border-color);
+  transform: translateY(calc(var(--pl) * 100%));
+}
+
+.s-hero-half--right {
+  background: var(--panel-bg);
+  clip-path: inset(0 0 0 var(--split));
+  transform: translateY(calc(var(--pr) * 100%));
+}
+
+/* Scroll cue under each section title — reads as "scroll on". */
+.s-hero-cue {
+  position: absolute;
+  top: calc(50% + 3.4rem);
+  left: var(--split);
+  transform: translateX(-50%);
+  color: var(--accent);
+  animation: heroCueBob 1.6s ease-in-out infinite;
+}
+
+@keyframes heroCueBob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 7px);
+  }
+}
+
+.s-hero-title {
+  position: absolute;
+  top: 50%;
+  left: var(--split);
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: 92vw;
+  text-align: center;
+  font-family: var(--hand);
+  font-size: clamp(2.6rem, 6.5vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text-h);
+}
+
+/* ---- Left progress rail: horizontal bars, one per section ---- */
+.rail {
+  position: fixed;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+}
+
+.rail-bars {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 40px;
-  height: 40px;
-  padding: 10px 9px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg);
+  gap: 0.7rem;
 }
 
-.nav-toggle-bar {
-  display: block;
-  height: 2px;
-  width: 100%;
-  background: var(--text-color);
-  border-radius: 2px;
-}
-
-.nav-list {
-  list-style: none;
-  margin: 0.5rem 0 0 0;
-  padding: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
-}
-
-.nav--open .nav-list {
-  max-height: 80vh;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.nav-item {
-  display: block;
-  width: 100%;
-  text-align: left;
+.rail-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
   border: none;
   background: none;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  color: var(--text-color);
+  padding: 0.15rem 0;
+  cursor: pointer;
+}
+
+/* The bar itself: a short horizontal line that grows for done/active sections. */
+.rail-bar-mark {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-color);
+  flex: none;
+  transition: width 0.25s ease, background 0.25s ease, height 0.25s ease;
+}
+
+.rail-bar.is-done .rail-bar-mark {
+  width: 22px;
+  background: var(--accent-border);
+}
+
+.rail-bar.is-active .rail-bar-mark {
+  width: 40px;
+  height: 4px;
+  background: var(--accent);
+}
+
+/* Sections still behind a closed gate: shown, but not yet navigable. */
+.rail-bar.is-locked {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.rail-bar.is-locked .rail-bar-mark {
+  width: 12px;
+  background: var(--border-color);
+}
+
+.rail-bar:hover .rail-bar-mark,
+.rail-bar:focus-visible .rail-bar-mark {
+  background: var(--accent);
+}
+
+.rail-bar-label {
+  font-family: var(--hand);
+  font-size: 1rem;
   white-space: nowrap;
+  color: var(--text-color);
+  background: var(--bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.15rem 0.6rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
 }
 
-.nav-item:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
+.rail-bar:hover .rail-bar-label,
+.rail-bar:focus-visible .rail-bar-label {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.nav-item--active {
-  color: var(--accent);
+/* ---- Top-right toggles: language + theme ---- */
+.toggles {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.lang-opt {
+  border: none;
+  background: none;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  background: var(--accent-bg);
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.lang-opt:hover {
+  color: var(--accent);
+}
+
+.lang-opt.is-on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ---- Visible fallback when a model throws ---- */
@@ -359,7 +669,8 @@ body,
   .reader,
   .scene-stage,
   .hero,
-  .nav {
+  .rail,
+  .toggles {
     display: none;
   }
   .mobile-stub {

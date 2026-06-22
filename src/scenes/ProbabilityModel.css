@@ -62,35 +62,46 @@
   background: var(--accent-bg);
 }
 
-/* ---- coin ---- */
+/* ---- coin: a round, flat minted disc (no gradient) ----
+   Flat silver face with a stepped milled rim built from solid inset rings, and
+   an engraved serif letter (NOT the hand font — a struck coin reads as crisp,
+   not sketched). */
 .coin-face {
-  width: 110px;
-  height: 110px;
+  width: 124px;
+  height: 124px;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #fde68a, #f59e0b);
-  color: #7c2d12;
+  background: #c9ced6;
+  color: #444b56;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 3rem;
   font-weight: 700;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  letter-spacing: 0.02em;
+  /* drop shadow + concentric solid rings = a milled rim, no gradient */
+  box-shadow:
+    0 5px 12px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 2px #aeb4be,
+    inset 0 0 0 4px #c9ced6,
+    inset 0 0 0 6px #9fa6b1;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 -1px 0 rgba(0, 0, 0, 0.14);
   transition: transform 0.3s ease;
 }
 
 .coin-face.flipping {
-  animation: coinFlip 0.3s ease;
+  animation: coinFlip 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 @keyframes coinFlip {
   0% {
-    transform: rotateX(0);
+    transform: rotateX(0) scale(1);
   }
-  50% {
-    transform: rotateX(540deg) scale(1.08);
+  45% {
+    transform: rotateX(540deg) scale(1.1);
   }
   100% {
-    transform: rotateX(1080deg);
+    transform: rotateX(1080deg) scale(1);
   }
 }
 
@@ -116,17 +127,18 @@
   text-anchor: middle;
 }
 
-/* ---- slider ---- */
+/* ---- slider (neutral, not the accent green) ---- */
 .prob-slider {
   width: 100%;
   max-width: 320px;
-  accent-color: var(--accent);
+  accent-color: var(--text-muted);
 }
 
 /* ---- tree ---- */
 .tree-edge {
   stroke: var(--border-color);
   stroke-width: 2;
+  transition: opacity 0.3s ease;
 }
 
 .tree-edge--dim {
@@ -135,10 +147,16 @@
   opacity: 0.6;
 }
 
+/* a branch the reader did not walk: dimmed but still visible */
+.tree-edge--faded {
+  opacity: 0.2;
+}
+
 .tree-node {
   fill: var(--panel-bg);
   stroke: var(--text-muted);
   stroke-width: 2;
+  transition: fill 0.25s ease, stroke 0.25s ease;
 }
 
 .tree-node--on {
@@ -146,14 +164,38 @@
   stroke: var(--accent);
 }
 
+/* Each freshly revealed level fades + slides in as the tree grows. */
+.tree-grow {
+  animation: treeGrow 0.4s ease both;
+  transform-origin: left center;
+}
+
+@keyframes treeGrow {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-grow {
+    animation: none;
+  }
+}
+
 .tree-label,
 .tree-leaf {
   fill: var(--text-color);
-  font-size: 13px;
+  font-family: var(--hand);
+  font-size: 18px;
 }
 
 .tree-leaf {
-  font-size: 12px;
+  font-size: 17px;
 }
 
 /* ---- two dice ---- */
@@ -162,19 +204,21 @@
   gap: 1rem;
 }
 
-/* ---- 6×6 grid ---- */
+/* ---- 6×6 grid (outcomes table) ---- */
 .dice-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  gap: 6px;
+  width: min(94%, 460px);
 }
 
 .grid-cell {
   aspect-ratio: 1;
   border: 1px solid var(--border-color);
   background: var(--bg);
-  border-radius: 4px;
-  font-size: 0.7rem;
+  border-radius: 6px;
+  font-family: var(--hand);
+  font-size: 1.05rem;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0;
@@ -189,4 +233,41 @@
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
+}
+
+/* the single cell a real roll landed on */
+.grid-cell--rolled {
+  outline: 3px solid var(--text-h);
+  outline-offset: -1px;
+  z-index: 1;
+}
+
+.grid-controls {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---- event: a clickable subset of the die's faces ---- */
+.event-faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  max-width: 320px;
+}
+
+/* ---- keep-a-coin pick targets on the tree ---- */
+.tree-pick {
+  cursor: pointer;
+}
+
+.tree-hit {
+  fill: transparent;
+}
+
+.tree-pick:hover .tree-node {
+  fill: var(--accent);
+  stroke: var(--accent);
 }

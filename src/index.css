@@ -1,3 +1,13 @@
+/* The hand-drawn xkcd font — this build covers both Latin and Cyrillic,
+   so it works for Russian and English alike. Self-hosted. */
+@font-face {
+  font-family: 'xkcd';
+  src: url('./assets/fonts/xkcd.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Colors */
   --text-color: #1f2937;
@@ -6,9 +16,9 @@
   --bg: #ffffff;
   --panel-bg: #f9fafb;
   --border-color: #e5e7eb;
-  --accent: #6366f1;
-  --accent-bg: rgba(99, 102, 241, 0.1);
-  --accent-border: rgba(99, 102, 241, 0.3);
+  --accent: #059669;
+  --accent-bg: rgba(5, 150, 105, 0.1);
+  --accent-border: rgba(5, 150, 105, 0.3);
   --code-bg: #f3f4f6;
 
   /* Die tokens */
@@ -16,17 +26,19 @@
   --die-edge: #d1d5db;
   --die-pip: #1f2937;
 
-  /* One color per die face — shared by Die and every chart */
-  --face-1: #6366f1;
-  --face-2: #0ea5e9;
-  --face-3: #10b981;
-  --face-4: #f59e0b;
-  --face-5: #ef4444;
-  --face-6: #a855f7;
+  /* One color per die face — a warm→green ramp (no blue, no purple) */
+  --face-1: #dc2626;
+  --face-2: #f97316;
+  --face-3: #eab308;
+  --face-4: #84cc16;
+  --face-5: #22c55e;
+  --face-6: #10b981;
 
   /* Typography */
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'Courier New', monospace;
+  /* Hand-drawn article font (xkcd — Latin + Cyrillic). */
+  --hand: 'xkcd', 'Comic Sans MS', cursive;
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -48,20 +60,38 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Dark tokens, shared by the explicit toggle and the OS-preference fallback. */
+:root[data-theme='dark'] {
+  --text-color: #e5e7eb;
+  --text-muted: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #111827;
+  --panel-bg: #1f2937;
+  --border-color: #374151;
+  --accent: #34d399;
+  --accent-bg: rgba(52, 211, 153, 0.12);
+  --accent-border: rgba(52, 211, 153, 0.32);
+  --code-bg: #1f2937;
+
+  /* Die tokens (dark) */
+  --die-face: #2a3441;
+  --die-edge: #4b5563;
+  --die-pip: #f3f4f6;
+}
+
+/* Before JS sets data-theme (or with JS off), honour the OS preference. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --text-color: #e5e7eb;
     --text-muted: #9ca3af;
     --text-h: #f3f4f6;
     --bg: #111827;
     --panel-bg: #1f2937;
     --border-color: #374151;
-    --accent: #818cf8;
-    --accent-bg: rgba(129, 140, 248, 0.1);
-    --accent-border: rgba(129, 140, 248, 0.3);
+    --accent: #34d399;
+    --accent-bg: rgba(52, 211, 153, 0.12);
+    --accent-border: rgba(52, 211, 153, 0.32);
     --code-bg: #1f2937;
-
-    /* Die tokens (dark) */
     --die-face: #2a3441;
     --die-edge: #4b5563;
     --die-pip: #f3f4f6;

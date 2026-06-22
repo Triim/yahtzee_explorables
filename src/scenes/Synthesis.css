@@ -155,4 +155,256 @@
   border-radius: 999px;
   font-size: 0.9rem;
   color: var(--text-h);
+  text-align: center;
+}
+
+/* ---- B10.1 live game ---- */
+.sy-game {
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* The full-kit game is dense — opt it out of the global model upscale and let it
+   scroll internally rather than overflow the fixed stage. */
+.scene-stage-inner > .sy-game {
+  transform: none;
+  max-height: 94vh;
+  overflow-y: auto;
+  padding: 0.25rem 0.5rem;
+}
+
+.sy-funnel-zero {
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.sy-funnel-band {
+  fill: var(--accent-bg);
+  stroke: var(--accent-border);
+  stroke-width: 1;
+}
+.sy-funnel-you {
+  fill: var(--accent);
+}
+
+.sy-gameover {
+  font-family: var(--hand);
+  font-size: 1.3rem;
+  color: var(--text-h);
+  padding: 0.4rem 0;
+}
+
+.sy-hand {
+  display: flex;
+  gap: 0.4rem;
+}
+.sy-die {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.sy-controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* decision fan */
+.sy-fan-root {
+  fill: var(--accent);
+}
+.sy-fan-edge {
+  stroke: var(--border-color);
+  stroke-width: 2;
+}
+.sy-fan-edge--max {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+.sy-fan-label {
+  font-family: var(--hand);
+  font-size: 12px;
+  fill: var(--text-muted);
+}
+.sy-fan-label--max {
+  fill: var(--accent);
+}
+
+/* full category table */
+.sy-cats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  width: 100%;
+}
+.sy-cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.sy-cat:hover {
+  border-color: var(--accent);
+}
+.sy-cat--best {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.sy-cat-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-h);
+}
+.sy-cat-ev {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.sy-ceiling {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- B10.3 Monte-Carlo convergence ---- */
+.sy-mc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+.sy-mc-num {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.sy-mc-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.sy-slider {
+  width: 100%;
+  max-width: 320px;
+  accent-color: var(--accent);
+}
+
+/* ---- you vs optimum (running gap) ---- */
+.sy-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: min(96%, 320px);
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.sy-opt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--hand);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.sy-opt-head b {
+  color: var(--text-h);
+}
+
+.sy-opt-gap--behind {
+  color: #ef4444;
+}
+
+.sy-opt-line {
+  display: block;
+  width: 100%;
+}
+
+.sy-opt-zero {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+
+.sy-opt-poly {
+  stroke: #ef4444;
+  stroke-width: 2;
+}
+
+.sy-opt-regret {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* ---- live hand-completion odds ---- */
+.sy-odds {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: min(96%, 320px);
+}
+
+.sy-odds-title {
+  font-family: var(--hand);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.sy-odds-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sy-odds-row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 2.2rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--hand);
+  font-size: 0.82rem;
+  color: var(--text-color);
+}
+
+.sy-odds-track {
+  height: 9px;
+  background: var(--bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.sy-odds-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.sy-odds-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.sy-odds-row--done .sy-odds-val {
+  color: var(--accent);
+}
+
+.sy-odds-row--none {
+  opacity: 0.5;
 }

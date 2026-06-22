@@ -1,23 +1,22 @@
 import { useEffect, useRef } from 'react'
+import { useSettings } from './SettingsContext'
+import { UI, pick } from '@/i18n'
 
 /** Hero content, duplicated into each clipped half so the text can be sliced. */
 function HeroContent() {
+  const { lang } = useSettings()
   const scrollDown = () => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
   }
   return (
     <>
-      <h1 className="hero-title">Пять кубиков</h1>
-      <p className="hero-sub">
-        За простой игрой в кости прячется вся математика случайности — от первого
-        броска до стратегии против соперника. Эта история проходит её целиком, и
-        каждый шаг можно потрогать руками.
-      </p>
+      <h1 className="hero-title">{pick(UI.heroTitle, lang)}</h1>
+      <p className="hero-sub">{pick(UI.heroSub, lang)}</p>
       <button
         type="button"
         className="hero-arrow"
         onClick={scrollDown}
-        aria-label="Листай вниз"
+        aria-label={pick(UI.heroArrow, lang)}
       >
         <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true">
           <path

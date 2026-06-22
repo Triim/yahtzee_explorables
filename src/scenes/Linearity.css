@@ -20,11 +20,17 @@
 
 .lin-row {
   display: grid;
-  grid-template-columns: 7rem 1fr;
+  grid-template-columns: 7rem 1fr 2rem;
   align-items: center;
   gap: 0.6rem;
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.lin-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
 }
 
 .lin-bar-track {
@@ -148,4 +154,53 @@
 
 .lin-irrev-late strong {
   color: #dc2626;
+}
+
+/* (greedy running score is drawn through XkcdChart; the move log styles follow) */
+
+.lin-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: min(96%, 340px);
+  font-family: var(--hand);
+  font-size: 0.9rem;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+.lin-log-row {
+  display: grid;
+  grid-template-columns: 1.4rem 5rem 1fr 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.lin-log-turn {
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.lin-log-hand {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.lin-log-score {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+}
+
+.lin-log-row--total {
+  border-bottom: none;
+  font-weight: 600;
+}
+
+.lin-log-row--total .lin-log-cat {
+  color: var(--accent);
 }

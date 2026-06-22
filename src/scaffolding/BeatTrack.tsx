@@ -1,14 +1,7 @@
-import type { GateKind } from './types'
 import { useBeatContext } from './BeatContext'
+import { useSettings } from './SettingsContext'
 import { RichText } from './RichText'
-
-const GATE_CUE: Record<GateKind, string> = {
-  roll: 'бросьте, чтобы продолжить',
-  slider: 'потяните ползунок, чтобы продолжить',
-  choice: 'выберите, чтобы продолжить',
-  hold: 'удержите кубик, чтобы продолжить',
-  toggle: 'переключите, чтобы продолжить',
-}
+import { GATE_CUE, beatPrompt, beatPayoff, pick } from '@/i18n'
 
 function Chevron() {
   return (
@@ -32,8 +25,12 @@ function Chevron() {
 }
 
 export function BeatTrack() {
-  const { allBeats, activeBeatId, isSatisfied, reachableThrough } =
+  const { scenes, allBeats, activeBeatId, isSatisfied, reachableThrough } =
     useBeatContext()
+  const { lang } = useSettings()
+
+  const hasHero = (sceneId: string) =>
+    sceneId !== 'opening' && !!scenes.find((s) => s.id === sceneId)?.menuLabel
 
   return (
     <div className="track">
@@ -44,8 +41,23 @@ export function BeatTrack() {
         // Past the first unsatisfied gate the document is collapsed: nothing to
         // scroll into until the gate opens. No wheel hijack, fully reversible.
         const locked = i > reachableThrough
+        const payoff = beatPayoff(beat, lang)
 
-        return (
+        // A reachable, first-of-section beat gets a full-screen title hero in
+        // front of it (the spacer the fixed curtain animates against). Skipped
+        // when locked, so a hero never grants scroll past a closed gate.
+        const firstOfScene = i === 0 || allBeats[i - 1].scene !== beat.scene
+        const spacer =
+          firstOfScene && !locked && hasHero(beat.scene) ? (
+            <div
+              key={`hero-${beat.scene}`}
+              className="s-hero-spacer"
+              data-section-hero={beat.scene}
+              aria-hidden="true"
+            />
+          ) : null
+
+        const section = (
           <section
             key={beat.id}
             className={`beat ${active ? 'active' : ''} ${
@@ -56,24 +68,26 @@ export function BeatTrack() {
             aria-hidden={locked || undefined}
           >
             <div className="beat-inner">
-              <p className="beat-prompt">
-                <RichText text={beat.prompt} />
-              </p>
+              <div className="beat-prompt">
+                <RichText text={beatPrompt(beat, lang)} />
+              </div>
 
-              {beat.payoff && open && (
-                <p className="beat-payoff">
-                  <RichText text={beat.payoff} />
-                </p>
+              {payoff && open && (
+                <div className="beat-payoff">
+                  <RichText text={payoff} />
+                </div>
               )}
 
               {gated && !open && (
-                <p className="beat-cue">{GATE_CUE[beat.gate!.kind]}</p>
+                <p className="beat-cue">{pick(GATE_CUE[beat.gate!.kind], lang)}</p>
               )}
 
               {open && i < reachableThrough && <Chevron />}
             </div>
           </section>
         )
+
+        return spacer ? [spacer, section] : section
       })}
     </div>
   )

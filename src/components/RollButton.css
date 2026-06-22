@@ -14,7 +14,7 @@
 
 .roll-button:hover:not(:disabled) {
   background: var(--accent-bg);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
 }
 
 .roll-button:active:not(:disabled) {
@@ -36,10 +36,10 @@
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+    box-shadow: 0 0 0 8px rgba(5, 150, 105, 0);
   }
 }
 

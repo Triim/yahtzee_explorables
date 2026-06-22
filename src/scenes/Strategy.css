@@ -1,0 +1,387 @@
+.strat-model {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 430px;
+}
+
+.strat-model--empty {
+  min-height: 1px;
+}
+
+.strat-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 0.7rem 1.3rem;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.strat-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.strat-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.strat-note {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 30rem;
+}
+.strat-note--accent {
+  color: var(--accent);
+}
+
+/* ---- A.1 single-roll bars (clickable) ---- */
+.strat-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+.strat-bar-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 4rem;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid transparent;
+  background: none;
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+.strat-bar-row:hover {
+  background: var(--accent-bg);
+}
+.strat-bar-row--on {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.strat-bar-name {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+.strat-bar-track {
+  position: relative;
+  height: 10px;
+  background: var(--border-color);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.strat-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+.strat-bar-fill--turn {
+  background: #ef4444;
+}
+.strat-bar-val {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- A.2 dual bars ---- */
+.strat-dual-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 5.5rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0.5rem;
+}
+.strat-dual-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.strat-key {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.strat-key--roll { background: var(--accent); }
+.strat-key--turn { background: #ef4444; }
+
+/* ---- A.3 ladder ---- */
+.strat-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.strat-rung {
+  display: grid;
+  grid-template-columns: 8rem 3.5rem 1fr;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--border-color);
+  background: var(--panel-bg);
+}
+.strat-rung--easy { border-left-color: #10b981; }
+.strat-rung--mid { border-left-color: #f59e0b; }
+.strat-rung--hard { border-left-color: #ef4444; }
+.strat-rung-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-h);
+}
+.strat-rung-tag {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ---- B hand + rows ---- */
+.strat-hand {
+  display: flex;
+  gap: 0.5rem;
+}
+.strat-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  width: 100%;
+}
+.strat-rows--short {
+  grid-template-columns: 1fr;
+  max-width: 16rem;
+}
+.strat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.strat-row:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.strat-row--on {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.strat-row--taken {
+  opacity: 0.4;
+  cursor: default;
+}
+.strat-row-score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+/* ---- B.3 upper bonus ---- */
+.strat-upper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+.strat-upper-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.strat-upper-btn--on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.strat-meter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.strat-meter-track {
+  position: relative;
+  height: 14px;
+  background: var(--border-color);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.strat-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+.strat-meter-goal {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 100%;
+  width: 2px;
+  background: #10b981;
+}
+.strat-meter-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.strat-meter-label b {
+  color: #10b981;
+}
+
+/* ---- B.4 championship scatter (μ, σ) ---- */
+.strat-axis {
+  stroke: var(--border-color);
+  stroke-width: 1.5;
+}
+.strat-axis-label {
+  font-family: var(--hand);
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+.strat-pt {
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.strat-pt-label {
+  font-family: var(--hand);
+  font-size: 11px;
+  fill: var(--text-color);
+}
+
+.strat-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+.strat-role {
+  display: grid;
+  grid-template-columns: 0.7rem 9rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+.strat-role-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+.strat-role-name {
+  color: var(--text-color);
+}
+.strat-role-opt {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+.strat-role-sig {
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* single-character card (STR.C1..C5) */
+.strat-card {
+  width: 100%;
+  max-width: 24rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--panel-bg);
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.strat-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.strat-card-name {
+  font-size: 1.05rem;
+  color: var(--text-h);
+}
+.strat-card-sig {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.strat-card-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-color);
+}
+
+.strat-minihist {
+  display: block;
+  margin: 0.4rem 0;
+  width: 100%;
+  max-width: 240px;
+}
+
+.strat-minihist-ax {
+  fill: var(--text-muted);
+  font-family: var(--hand);
+  font-size: 9px;
+}
+
+/* ---- Monte Carlo progress bar (shared look with Strategies.css) ---- */
+.st-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: min(90%, 300px);
+  margin-top: 0.6rem;
+}
+
+.st-progress-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.st-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.15s linear;
+}
+
+.st-progress-label {
+  font-family: var(--hand);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
