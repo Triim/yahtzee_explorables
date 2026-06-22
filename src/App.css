@@ -343,6 +343,10 @@ body,
   --pl: 0;
   --pr: 0;
   --split: 40%;
+  /* Shared so the intro can line up with the left edge of the dice row. */
+  --die: clamp(4.4rem, 5.2vw + 1.6vh, 7.2rem);
+  --die-gap: clamp(0.8rem, 1.4vw, 1.5rem);
+  --dice-row: calc(5 * var(--die) + 4 * var(--die-gap));
 }
 
 .hero-half {
@@ -375,7 +379,7 @@ body,
   top: 50%;
   left: var(--split);
   transform: translate(-50%, -50%);
-  width: min(56rem, 84vw);
+  width: var(--dice-row);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -397,29 +401,25 @@ body,
   border: 0;
 }
 
-/* Decorative dice spelling the title; the pane seam cuts through the row. */
+/* Decorative dice spelling the title; styled to match the article's Die
+   (soft --die-edge border, --die-face body, larger --die-pip dots). */
 .hero-dice-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(0.8rem, 1.4vw, 1.5rem);
+  gap: var(--die-gap);
 }
 
 .hero-title-die {
   position: relative;
   display: block;
-  width: clamp(4.4rem, 5.2vw + 1.6vh, 7.2rem);
+  width: var(--die);
   aspect-ratio: 1;
-  color: var(--text-h);
-  background: var(--bg);
-  border: 3px solid currentColor;
-  border-radius: 20%;
-  box-shadow: 0.2rem 0.2rem 0 var(--border-color);
+  background: var(--die-face);
+  border: 2px solid var(--die-edge);
+  border-radius: 18%;
+  box-shadow: 0.15rem 0.2rem 0.4rem rgba(0, 0, 0, 0.18);
   transform: rotate(var(--hero-die-tilt, 0deg));
-}
-
-.hero-half--right .hero-title-die {
-  background: var(--panel-bg);
 }
 
 .hero-title-die--1 { --hero-die-tilt: -4deg; }
@@ -430,10 +430,10 @@ body,
 
 .hero-title-pip {
   position: absolute;
-  width: 11.5%;
-  height: 11.5%;
+  width: 16%;
+  height: 16%;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--die-pip);
 }
 
 .hero-title-pip--tl { left: 28%; top: 28%; transform: translate(-50%, -50%); }
@@ -444,22 +444,61 @@ body,
 .hero-title-pip--ml { left: 28%; top: 50%; transform: translate(-50%, -50%); }
 .hero-title-pip--mr { right: 28%; top: 50%; transform: translate(50%, -50%); }
 
+/* Intro line: left-aligned, its left edge pinned to the left edge of the dice
+   row; it can extend right past the row to keep to two lines. */
 .hero-sub {
   margin: 0;
-  width: min(52rem, 82vw);
+  align-self: flex-start;
+  width: min(52rem, 80vw);
+  text-align: left;
   font-family: var(--hand);
   font-size: clamp(1.18rem, 1.4vw, 1.5rem);
   line-height: 1.42;
   color: var(--text-muted);
 }
 
+/* Seam-straddling lines: a 3- or 2-column grid keeps the split point (the dash,
+   or the gap between names) dead-centre — and the block is centred on the seam,
+   so the split point lands exactly on the pane seam. */
+.hero-tagline {
+  margin: 0;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 0.5em;
+  font-family: var(--hand);
+  font-size: clamp(1.18rem, 1.4vw, 1.5rem);
+  line-height: 1.42;
+  color: var(--text-color);
+}
+
 .hero-author {
   margin: 0;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 0.32em;
   font-family: var(--hand);
   font-size: clamp(0.92rem, 1vw, 1.08rem);
   line-height: 1.35;
   color: var(--text-muted);
   opacity: 0.76;
+}
+
+.seam-side {
+  white-space: nowrap;
+}
+
+.seam-left {
+  text-align: right;
+}
+
+.seam-right {
+  text-align: left;
+}
+
+.seam-dash {
+  text-align: center;
 }
 
 .hero-arrow {

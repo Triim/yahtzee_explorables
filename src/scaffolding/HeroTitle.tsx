@@ -8,6 +8,14 @@ function HeroContent() {
   const scrollDown = () => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
   }
+  // Split the tagline on its em-dash and the byline on its last space so the
+  // pane seam falls exactly on the dash / between first and last name.
+  const tagline = pick(UI.heroTagline, lang)
+  const [tlLeft, tlRight] = tagline.split(/\s*—\s*/)
+  const author = pick(UI.heroAuthor, lang)
+  const auCut = author.lastIndexOf(' ')
+  const auLeft = author.slice(0, auCut)
+  const auRight = author.slice(auCut + 1)
   return (
     <>
       <div className="hero-center">
@@ -32,7 +40,15 @@ function HeroContent() {
           </span>
         </div>
         <p className="hero-sub">{pick(UI.heroSub, lang)}</p>
-        <p className="hero-author">{pick(UI.heroAuthor, lang)}</p>
+        <p className="hero-tagline" aria-label={tagline}>
+          <span className="seam-side seam-left" aria-hidden="true">{tlLeft}</span>
+          <span className="seam-dash" aria-hidden="true">—</span>
+          <span className="seam-side seam-right" aria-hidden="true">{tlRight}</span>
+        </p>
+        <p className="hero-author" aria-label={author}>
+          <span className="seam-side seam-left" aria-hidden="true">{auLeft}</span>
+          <span className="seam-side seam-right" aria-hidden="true">{auRight}</span>
+        </p>
       </div>
       <button
         type="button"

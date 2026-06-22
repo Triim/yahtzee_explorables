@@ -14,12 +14,16 @@ export function pick(b: Bilingual, lang: Lang): string {
 export const UI = {
   heroTitle: { ru: 'Пять кубиков', en: 'Five dice' },
   heroSub: {
-    ru: 'Интерактивное введение в теорию вероятностей на примере простой игры в кости. Трогай правое — читай левое.',
-    en: 'An interactive introduction to probability through a simple dice game. Touch the right — read the left.',
+    ru: 'Интерактивное введение в теорию вероятностей на примере простой игры в кости.',
+    en: 'An interactive introduction to probability through a simple dice game.',
+  },
+  heroTagline: {
+    ru: 'Читай левое — трогай правое',
+    en: 'Read the left — touch the right',
   },
   heroAuthor: {
-    ru: 'Сайт подготовлен Ильёй Могилевым',
-    en: 'Site prepared by Ilia Mogilev',
+    ru: 'От Ильи Могилева',
+    en: 'By Ilia Mogilev',
   },
   heroArrow: { ru: 'Листай вниз', en: 'Scroll down' },
   sections: { ru: 'Разделы', en: 'Sections' },
