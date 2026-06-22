@@ -261,12 +261,21 @@
 }
 
 .cnt-slot10 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 2.1rem;
   height: 2.6rem;
+  padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg);
-  font-size: 1.2rem;
+  /* The hand-drawn body font renders ★ oversized and top-heavy, so it spilled
+     past the box. Use a normal font stack with a tight line so the glyph sits
+     centred and fully inside the slot. */
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.1rem;
+  line-height: 1;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
