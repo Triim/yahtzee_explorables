@@ -26,6 +26,10 @@ export const UI = {
     en: 'By Ilia Mogilev',
   },
   heroArrow: { ru: 'Листай вниз', en: 'Scroll down' },
+  skipTutorial: {
+    ru: 'Пропустить туториал',
+    en: 'Skip the tutorial',
+  },
   sections: { ru: 'Разделы', en: 'Sections' },
   progress: { ru: 'Прогресс чтения', en: 'Reading progress' },
   themeSwitch: { ru: 'Сменить тему', en: 'Switch theme' },

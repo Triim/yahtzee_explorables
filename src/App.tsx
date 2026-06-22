@@ -7,6 +7,7 @@ import { ActiveSceneRenderer } from '@/scaffolding/ActiveSceneRenderer'
 import { HeroTitle } from '@/scaffolding/HeroTitle'
 import { SectionHeroes } from '@/scaffolding/SectionHeroes'
 import { NavMenu } from '@/scaffolding/NavMenu'
+import { SkipTutorial } from '@/scaffolding/SkipTutorial'
 import { Toggles } from '@/scaffolding/Toggles'
 import { SettingsProvider, useSettings } from '@/scaffolding/SettingsContext'
 import { PlayerStateProvider } from '@/scaffolding/PlayerStateContext'
@@ -65,6 +66,7 @@ function AppContent() {
     <>
       <NavMenu />
       <Toggles />
+      <SkipTutorial />
 
       {/* Fixed right-hand stage: it never scrolls, only its content swaps. */}
       <ActiveSceneRenderer />

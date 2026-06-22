@@ -754,6 +754,45 @@ body,
   color: var(--accent);
 }
 
+/* ---- Skip-tutorial escape hatch (only during the opening run-up) ---- */
+.skip-tutorial {
+  position: fixed;
+  bottom: 1.4rem;
+  left: 1.4rem;
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.12);
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.skip-tutorial:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+.skip-tutorial svg {
+  flex: none;
+}
+
+@media (max-width: 860px) {
+  .skip-tutorial {
+    display: none;
+  }
+}
+
 /* ---- Visible fallback when a model throws ---- */
 .stage-error {
   max-width: 420px;
