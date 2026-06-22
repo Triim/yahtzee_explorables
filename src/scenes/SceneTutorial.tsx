@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SceneModelProps, Scene } from '@/scaffolding'
 import { useTr, usePlayerState } from '@/scaffolding'
-import { Die } from '@/components'
+import { Die, useDieRoll } from '@/components'
 import './Tutorial.css'
 
 /* ============================================================
@@ -57,6 +57,42 @@ function rollFace() {
   return ((Math.random() * 6) | 0) + 1
 }
 
+/** One tutorial die that re-throws (reusing useDieRoll) when it was rolled this
+ *  turn; held dice sit still and just keep showing their value. */
+function TutorialDie({
+  value,
+  animate,
+  rollToken,
+  held,
+  disabled,
+  onClick,
+}: {
+  value: number
+  animate: boolean
+  rollToken: number
+  held: boolean
+  disabled: boolean
+  onClick: () => void
+}) {
+  const die = useDieRoll(value)
+  const first = useRef(true)
+
+  useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (animate) die.start(value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rollToken])
+
+  return (
+    <button className="tut-die" onClick={onClick} disabled={disabled}>
+      <Die value={die.displayValue} size={56} held={held} throwing={die.throwing} />
+    </button>
+  )
+}
+
 export function TutorialModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const beat = activeBeatId ?? ''
   const tr = useTr()
@@ -68,6 +104,10 @@ export function TutorialModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [held, setHeld] = useState<boolean[]>([false, false, false, false, false])
   const [rerolls, setRerolls] = useState(3) // rolls remaining this turn (1 initial + 2 rerolls)
   const [rolled, setRolled] = useState(false)
+  // Drives the throw animation: a token that ticks each roll, plus the per-die
+  // mask of which dice actually flew (held dice stay put).
+  const [rollToken, setRollToken] = useState(0)
+  const [rolling, setRolling] = useState<boolean[]>([false, false, false, false, false])
 
   const upper = (scorecard.slice(0, 6) as (number | null)[]).reduce<number>((a, b) => a + (b ?? 0), 0)
   const runningTotal = scorecard.reduce<number>((a, b) => a + (b ?? 0), 0)
@@ -78,7 +118,12 @@ export function TutorialModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   }, [done, beat, satisfyGate])
 
   const roll = () => {
-    setHand((h) => h.map((v, i) => (rolled && held[i] ? v : rollFace())))
+    // A die flies unless it was explicitly held on a reroll (the first roll of a
+    // turn throws all five). Same mask drives the hand update and the animation.
+    const flew = hand.map((_, i) => !(rolled && held[i]))
+    setHand((h) => h.map((v, i) => (flew[i] ? rollFace() : v)))
+    setRolling(flew)
+    setRollToken((t) => t + 1)
     setRerolls((r) => r - 1)
     setRolled(true)
     // Rolling only opens the "roll the dice" beat; the write-a-row beats must be
@@ -107,9 +152,15 @@ export function TutorialModel({ activeBeatId, satisfyGate }: SceneModelProps) {
         <>
           <div className="tut-hand">
             {hand.map((v, i) => (
-              <button key={i} className="tut-die" onClick={() => toggleHold(i)} disabled={!rolled}>
-                <Die value={v} size={56} held={held[i]} />
-              </button>
+              <TutorialDie
+                key={i}
+                value={v}
+                animate={rolling[i]}
+                rollToken={rollToken}
+                held={held[i]}
+                disabled={!rolled}
+                onClick={() => toggleHold(i)}
+              />
             ))}
           </div>
           <div className="tut-controls">
