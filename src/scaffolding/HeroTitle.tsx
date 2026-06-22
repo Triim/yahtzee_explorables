@@ -5,77 +5,54 @@ import { UI, pick } from '@/i18n'
 /** Hero content, duplicated into each clipped half so the text can be sliced. */
 function HeroContent() {
   const { lang } = useSettings()
-
-  const introLine1 =
-    lang === 'en'
-      ? 'An interactive introduction to probability'
-      : 'Интерактивное введение в теорию вероятностей'
-
-  const introLine2 =
-    lang === 'en'
-      ? 'through a simple dice game.'
-      : 'на примере простой игры в кости.'
-
-  const seamLeft =
-    lang === 'en'
-      ? 'Read the left side'
-      : 'Читай левое'
-
-  const seamRight =
-    lang === 'en'
-      ? 'touch the right side.'
-      : 'трогай правое.'
-
-  const byline =
-    lang === 'en'
-      ? 'Site prepared by Ilia Mogilev.'
-      : 'Сайт подготовлен Ильёй Могилевым.'
-
   const scrollDown = () => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
   }
-
   return (
     <>
-      <div className="hero-dice-cluster" aria-hidden="true">
-        <div className="hero-dice-side hero-dice-side--left">
-          <span className="hero-die hero-die--1"><span className="pip pip--cc" /></span>
-          <span className="hero-die hero-die--4">
-            <span className="pip pip--tl" /><span className="pip pip--tr" />
-            <span className="pip pip--bl" /><span className="pip pip--br" />
+      <h1 className="hero-title">{pick(UI.heroTitle, lang)}</h1>
+      <div className="hero-dice-title" aria-hidden="true">
+        <div className="hero-dice-group hero-dice-group--left">
+          <span className="hero-title-die hero-title-die--1"><span className="hero-title-pip hero-title-pip--cc" /></span>
+          <span className="hero-title-die hero-title-die--4">
+            <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--tr" />
+            <span className="hero-title-pip hero-title-pip--bl" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
         </div>
 
-        <div className="hero-dice-side hero-dice-side--right">
-          <span className="hero-die hero-die--2">
-            <span className="pip pip--tl" /><span className="pip pip--br" />
+        <div className="hero-dice-group hero-dice-group--right">
+          <span className="hero-title-die hero-title-die--2">
+            <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
-          <span className="hero-die hero-die--5">
-            <span className="pip pip--tl" /><span className="pip pip--tr" />
-            <span className="pip pip--cc" />
-            <span className="pip pip--bl" /><span className="pip pip--br" />
+          <span className="hero-title-die hero-title-die--5">
+            <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--tr" />
+            <span className="hero-title-pip hero-title-pip--cc" />
+            <span className="hero-title-pip hero-title-pip--bl" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
-          <span className="hero-die hero-die--6">
-            <span className="pip pip--tl" /><span className="pip pip--ml" /><span className="pip pip--bl" />
-            <span className="pip pip--tr" /><span className="pip pip--mr" /><span className="pip pip--br" />
+          <span className="hero-title-die hero-title-die--6">
+            <span className="hero-title-pip hero-title-pip--tl" /><span className="hero-title-pip hero-title-pip--ml" /><span className="hero-title-pip hero-title-pip--bl" />
+            <span className="hero-title-pip hero-title-pip--tr" /><span className="hero-title-pip hero-title-pip--mr" /><span className="hero-title-pip hero-title-pip--br" />
           </span>
         </div>
       </div>
-
-      <div className="hero-copy">
-        <p className="hero-sub">
-          <span className="hero-sub-line hero-sub-line--intro">{introLine1}</span>
-          <span className="hero-sub-line hero-sub-line--intro">{introLine2}</span>
-          <span className="hero-sub-line hero-sub-line--seam">
-            {seamLeft} — {seamRight}
-          </span>
-        </p>
-
-        <p className="hero-byline">{byline}</p>
-      </div>
-
-      <button className="hero-arrow" type="button" onClick={scrollDown} aria-label={pick(UI.heroArrow, lang)}>
-        ↓
+      <p className="hero-sub">{pick(UI.heroSub, lang)}</p>
+      <p className="hero-author">{pick(UI.heroAuthor, lang)}</p>
+      <button
+        type="button"
+        className="hero-arrow"
+        onClick={scrollDown}
+        aria-label={pick(UI.heroArrow, lang)}
+      >
+        <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M6 9l6 6 6-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
     </>
   )

@@ -1,8 +1,3 @@
-:root {
-  --split: clamp(320px, 40vw, 560px);
-  --stage-pad: clamp(0.75rem, 2vw, 2rem);
-}
-
 /* ============================================================
    Shell layout
    - The page scrolls; only the LEFT reading column moves.
@@ -28,8 +23,8 @@ body,
 .reader {
   position: relative;
   z-index: 2;
-  width: var(--split);
-  min-width: 0;
+  width: 40%;
+  min-width: 360px;
 }
 
 .track {
@@ -209,17 +204,15 @@ body,
   position: fixed;
   top: 0;
   right: 0;
-  left: var(--split);
-  width: auto;
-  height: 100dvh;
+  width: 60%;
+  height: 100vh;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--panel-bg);
-  padding: var(--stage-pad);
+  padding: 2rem;
   overflow: hidden;
-  --model-scale: 1;
 }
 
 /* Entrance choreography: text lands first; the model slides in once the reader
@@ -349,6 +342,7 @@ body,
   z-index: 4;
   --pl: 0;
   --pr: 0;
+  --split: 40%;
 }
 
 .hero-half {
@@ -403,6 +397,22 @@ body,
   color: var(--text-muted);
 }
 
+
+.hero-author {
+  position: absolute;
+  top: 50%;
+  left: var(--split);
+  transform: translateX(-50%);
+  margin-top: 12.25rem;
+  width: min(34rem, 80vw);
+  text-align: center;
+  font-family: var(--hand);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  opacity: 0.76;
+}
+
 .hero-arrow {
   position: absolute;
   bottom: 11vh;
@@ -444,6 +454,7 @@ body,
   position: fixed;
   inset: 0;
   z-index: 3;
+  --split: 40%;
   --pl: 0;
   --pr: 0;
   transition: opacity 0.12s linear;
@@ -670,7 +681,7 @@ body,
   display: none;
 }
 
-@media (max-width: 860px) and (pointer: coarse) {
+@media (max-width: 860px) {
   .reader,
   .scene-stage,
   .hero,
@@ -707,214 +718,120 @@ body,
 }
 
 
-@media (min-width: 1280px) and (min-height: 760px) {
-  .scene-stage {
-    --model-scale: 1.14;
-  }
-}
-
-@media (min-width: 1500px) and (min-height: 850px) {
-  .scene-stage {
-    --model-scale: 1.32;
-  }
-}
-
-@media (max-width: 1100px), (max-height: 700px) {
-  .scene-stage {
-    --model-scale: 0.92;
-  }
-
-  .beat,
-  .track > .beat:first-child .beat-inner {
-    padding: 2.5rem 1.75rem;
-  }
-}
-
-@media (max-width: 950px), (max-height: 620px) {
-  .scene-stage {
-    --model-scale: 0.82;
-  }
-
-  .beat-prompt {
-    font-size: 1.3rem;
-  }
-
-  .beat-payoff {
-    font-size: 1.05rem;
-  }
-}
-
-
-/* ---- Opening hero: final aligned composition ---- */
+/* ---- Opening hero dice-title redesign v1 ---- */
 .hero {
-  --hero-die-size: clamp(6.35rem, 8.55vw, 8.9rem);
-  --hero-die-gap: clamp(1.05rem, 1.65vw, 1.75rem);
-  --hero-seam-gap: clamp(0.8rem, 1.1vw, 1.15rem);
-
-  --hero-left-stack-width: calc((2 * var(--hero-die-size)) + var(--hero-die-gap));
-  --hero-copy-left: calc(var(--split) - var(--hero-seam-gap) - var(--hero-left-stack-width));
-
-  --hero-copy-top: 55%;
-  --hero-text-size: clamp(1.3rem, 1.68vw, 1.68rem);
-  --hero-byline-size: clamp(1rem, 1.23vw, 1.24rem);
-
-  --pip-size: calc(var(--hero-die-size) * 0.118);
-  --pip-inset: 28%;
+  --hero-die-size: clamp(5.4rem, 7.2vw, 7.6rem);
+  --hero-die-gap: clamp(0.9rem, 1.3vw, 1.45rem);
+  --hero-seam-gap: clamp(0.7rem, 1vw, 1rem);
 }
 
-.hero-dice-cluster {
+.hero-title {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+.hero-dice-title {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.hero-dice-side {
+.hero-dice-group {
   position: absolute;
-  top: clamp(11.5rem, 27vh, 17rem);
+  top: clamp(8rem, 22vh, 12.5rem);
   display: flex;
   align-items: center;
   gap: var(--hero-die-gap);
 }
 
-.hero-dice-side--left {
+.hero-dice-group--left {
   right: calc(100% - var(--split) + var(--hero-seam-gap));
 }
 
-.hero-dice-side--right {
+.hero-dice-group--right {
   left: calc(var(--split) + var(--hero-seam-gap));
 }
 
-.hero-die {
+.hero-title-die {
   position: relative;
+  display: block;
   width: var(--hero-die-size);
   aspect-ratio: 1;
-  display: block;
-
   color: var(--text-h);
-  background-color: var(--bg);
+  background: var(--bg);
   border: 3px solid currentColor;
   border-radius: 20%;
-  box-shadow: 0.22rem 0.22rem 0 var(--border-color);
-  transform: rotate(var(--die-tilt, 0deg));
-
-  background-image: none !important;
+  box-shadow: 0.2rem 0.2rem 0 var(--border-color);
+  transform: rotate(var(--hero-die-tilt, 0deg));
 }
 
-.hero-dice-side--right .hero-die {
-  background-color: var(--panel-bg);
+.hero-half--right .hero-title-die {
+  background: var(--panel-bg);
 }
 
-.hero-die--1 { --die-tilt: -4deg; }
-.hero-die--2 { --die-tilt: 3deg; }
-.hero-die--4 { --die-tilt: 2deg; }
-.hero-die--5 { --die-tilt: -2deg; }
-.hero-die--6 { --die-tilt: 4deg; }
+.hero-title-die--1 { --hero-die-tilt: -4deg; }
+.hero-title-die--2 { --hero-die-tilt: 3deg; }
+.hero-title-die--4 { --hero-die-tilt: 2deg; }
+.hero-title-die--5 { --hero-die-tilt: -2deg; }
+.hero-title-die--6 { --hero-die-tilt: 4deg; }
 
-.hero-die::before,
-.hero-die::after {
-  content: none !important;
-}
-
-.pip {
+.hero-title-pip {
   position: absolute;
-  width: var(--pip-size);
-  height: var(--pip-size);
+  width: calc(var(--hero-die-size) * 0.115);
+  height: calc(var(--hero-die-size) * 0.115);
   border-radius: 50%;
   background: currentColor;
 }
 
-.pip--tl { left: var(--pip-inset); top: var(--pip-inset); transform: translate(-50%, -50%); }
-.pip--tr { right: var(--pip-inset); top: var(--pip-inset); transform: translate(50%, -50%); }
-.pip--bl { left: var(--pip-inset); bottom: var(--pip-inset); transform: translate(-50%, 50%); }
-.pip--br { right: var(--pip-inset); bottom: var(--pip-inset); transform: translate(50%, 50%); }
-.pip--cc { left: 50%; top: 50%; transform: translate(-50%, -50%); }
-.pip--ml { left: var(--pip-inset); top: 50%; transform: translate(-50%, -50%); }
-.pip--mr { right: var(--pip-inset); top: 50%; transform: translate(50%, -50%); }
+.hero-title-pip--tl { left: 28%; top: 28%; transform: translate(-50%, -50%); }
+.hero-title-pip--tr { right: 28%; top: 28%; transform: translate(50%, -50%); }
+.hero-title-pip--bl { left: 28%; bottom: 28%; transform: translate(-50%, 50%); }
+.hero-title-pip--br { right: 28%; bottom: 28%; transform: translate(50%, 50%); }
+.hero-title-pip--cc { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.hero-title-pip--ml { left: 28%; top: 50%; transform: translate(-50%, -50%); }
+.hero-title-pip--mr { right: 28%; top: 50%; transform: translate(50%, -50%); }
 
-.hero-copy {
-  position: absolute;
-  top: var(--hero-copy-top);
-  left: var(--hero-copy-left);
-  transform: translateY(-50%);
-
-  width: calc(100% - var(--hero-copy-left) - 3rem);
-  max-width: 80rem;
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: clamp(0.75rem, 1.25vh, 1.05rem);
-
-  text-align: left !important;
-}
-
-.hero-copy .hero-sub {
-  position: static !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
-
-  margin: 0;
-  width: 100%;
-  max-width: none;
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.28rem;
-
-  text-align: left !important;
-  font-family: var(--hand);
-  font-size: var(--hero-text-size);
-  line-height: 1.42;
-  color: var(--text-h);
-}
-
-.hero-copy .hero-sub-line {
-  display: block;
-  text-align: left !important;
-}
-
-.hero-copy .hero-sub-line--intro {
-  width: min(58rem, 100%);
-  max-width: 58rem;
-}
-
-.hero-copy .hero-sub-line--seam {
-  display: block;
-  width: 100%;
-  white-space: normal;
-}
-
-
-
-
-
-
-
-.hero-copy .hero-byline {
-  position: static !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
-
-  margin: 0;
-  width: 100%;
-
-  text-align: left !important;
-  font-family: var(--hand);
-  font-size: var(--hero-byline-size);
-  line-height: 1.35;
+.hero-sub {
+  top: clamp(21rem, 51vh, 26rem);
+  left: var(--split);
+  transform: translateX(-50%);
+  margin-top: 0;
+  width: min(48rem, 78vw);
+  text-align: center;
+  font-size: clamp(1.25rem, 1.55vw, 1.6rem);
+  line-height: 1.38;
   color: var(--text-muted);
 }
 
-.hero-title,
-.hero-credit,
-.hero-author,
-.site-credit {
-  display: none !important;
+.hero .hero-author {
+  position: absolute;
+  top: clamp(27rem, 64vh, 32rem);
+  left: var(--split);
+  transform: translateX(-50%);
+  margin: 0;
+  width: min(42rem, 78vw);
+  text-align: center;
+  font-family: var(--hand);
+  font-size: clamp(0.95rem, 1.05vw, 1.12rem);
+  line-height: 1.35;
+  color: var(--text-muted);
+  opacity: 0.76;
+}
+/* ---- End opening hero dice-title redesign v1 ---- */
+
+/* ---- Opening hero spacing correction v2 ---- */
+.hero-sub {
+  top: clamp(23rem, 52vh, 27rem);
+  width: min(56rem, 82vw);
+  font-size: clamp(1.18rem, 1.38vw, 1.42rem);
+  line-height: 1.34;
 }
 
-.hero-arrow {
-  bottom: 8vh;
+.hero .hero-author {
+  top: clamp(32rem, 72vh, 36rem);
+  font-size: clamp(0.9rem, 0.95vw, 1rem);
 }

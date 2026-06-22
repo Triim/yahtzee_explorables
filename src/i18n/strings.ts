@@ -12,8 +12,15 @@ export function pick(b: Bilingual, lang: Lang): string {
 /* ---- UI chrome (everything that isn't beat content) ---- */
 
 export const UI = {
-  heroTitle: { ru: '', en: '' },
-  heroSub: { ru: 'Интерактивное введение в теорию вероятностей на примере простой игры в кости. Трогай правое — читай левое.', en: 'An interactive introduction to probability through a simple dice game. Touch the right side — read the left side.' },
+  heroTitle: { ru: 'Пять кубиков', en: 'Five dice' },
+  heroSub: {
+    ru: 'Интерактивное введение в теорию вероятностей на примере простой игры в кости. Трогай правое — читай левое.',
+    en: 'An interactive introduction to probability through a simple dice game. Touch the right — read the left.',
+  },
+  heroAuthor: {
+    ru: 'Сайт подготовлен Ильёй Могилевым',
+    en: 'Site prepared by Ilia Mogilev',
+  },
   heroArrow: { ru: 'Листай вниз', en: 'Scroll down' },
   sections: { ru: 'Разделы', en: 'Sections' },
   progress: { ru: 'Прогресс чтения', en: 'Reading progress' },
