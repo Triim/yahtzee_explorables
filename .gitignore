@@ -3,9 +3,14 @@ dist/
 coverage/
 .DS_Store
 .vite/
+.vscode/
 
 # Generated or local artifacts
 *.log
+*.zip
 
-# Project scaffolding prompts and working notes
-yahtzee-*prompt*.md
+# Local working notes, prompts, specs, analysis (kept locally, never committed)
+yahtzee-*.md
+
+# Local backup copies of the project
+yahtzee_*/
