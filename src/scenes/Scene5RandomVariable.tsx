@@ -37,24 +37,32 @@ const ROWS: { name: string; score: (h: number[]) => number }[] = [
   { name: 'Шанс', score: (h) => sum(h) },
 ]
 
+/* A path's worth stays hidden until the card is tapped, so comparing the two
+   paths is the reader's own discovery rather than something read off at a glance. */
 function PathCard({
   title,
   value,
   sub,
-  on,
+  hint,
+  revealed,
   onClick,
 }: {
   title: string
   value: string
   sub: string
-  on: boolean
+  hint: string
+  revealed: boolean
   onClick: () => void
 }) {
   return (
-    <button className={`rv-path ${on ? 'rv-path--on' : ''}`} onClick={onClick}>
+    <button
+      className={`rv-path ${revealed ? 'rv-path--on' : 'rv-path--hidden'}`}
+      onClick={onClick}
+      aria-expanded={revealed}
+    >
       <span className="rv-path-title">{title}</span>
-      <span className="rv-path-value">{value}</span>
-      <span className="rv-path-sub">{sub}</span>
+      <span className="rv-path-value">{revealed ? value : '?'}</span>
+      <span className="rv-path-sub">{revealed ? sub : hint}</span>
     </button>
   )
 }
@@ -63,7 +71,18 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
   const beat = activeBeatId ?? ''
   const tr = useTr()
   const [written, setWritten] = useState<Set<number>>(new Set())
-  const [path, setPath] = useState<'now' | 'reroll' | null>(null)
+  // Revealed path cards, keyed by `${beat}:${which}` so B5.2 and B5.3 don't bleed
+  // into each other. The gate opens only once BOTH paths of a beat are revealed.
+  const [revealedPaths, setRevealedPaths] = useState<Set<string>>(new Set())
+  const isRevealed = (which: 'now' | 'reroll') => revealedPaths.has(`${beat}:${which}`)
+  const revealPath = (which: 'now' | 'reroll') =>
+    setRevealedPaths((prev) => {
+      const n = new Set(prev)
+      n.add(`${beat}:${which}`)
+      if (n.has(`${beat}:now`) && n.has(`${beat}:reroll`)) satisfyGate?.()
+      return n
+    })
+  const cardHint = tr('нажми — раскрыть ценность', 'tap to reveal its value')
 
   const HANDS: Record<string, number[]> = {
     'B5.1': [4, 4, 4, 2, 1],
@@ -114,7 +133,11 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
                 }}
               >
                 <span>{tr(row.name, ROW_NAMES_EN[i])}</span>
-                <span className="rv-row-score">{row.score(hand)}</span>
+                {/* Score is hidden until the row is tapped, so the manipulation
+                    is the discovery the prompt promises rather than a no-op. */}
+                <span className={`rv-row-score ${written.has(i) ? '' : 'rv-row-score--hidden'}`}>
+                  {written.has(i) ? row.score(hand) : '·'}
+                </span>
               </button>
             </li>
           ))}
@@ -127,15 +150,17 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
             title={tr('писать тройку сейчас', 'score the triple now')}
             value="15"
             sub={tr('4+4+4+2+1 наверняка', '4+4+4+2+1 for sure')}
-            on={path === 'now'}
-            onClick={() => { setPath('now'); satisfyGate?.() }}
+            hint={cardHint}
+            revealed={isRevealed('now')}
+            onClick={() => revealPath('now')}
           />
           <PathCard
             title={tr('перебросить 2 и 1', 'reroll the 2 and 1')}
             value="≈ 19"
             sub={tr('12 + в среднем 7 (2 × 3,5)', '12 + 7 on average (2 × 3.5)')}
-            on={path === 'reroll'}
-            onClick={() => { setPath('reroll'); satisfyGate?.() }}
+            hint={cardHint}
+            revealed={isRevealed('reroll')}
+            onClick={() => revealPath('reroll')}
           />
         </div>
       )}
@@ -146,15 +171,17 @@ export function RandomVariableModel({ activeBeatId, satisfyGate }: SceneModelPro
             title={tr('держать 6·6 → каре', 'keep 6·6 → four of a kind')}
             value="≈ 13"
             sub={tr('каре редко — чаще останешься с 12 за шестёрки', 'four of a kind is rare — usually you keep 12 for sixes')}
-            on={path === 'now'}
-            onClick={() => { setPath('now'); satisfyGate?.() }}
+            hint={cardHint}
+            revealed={isRevealed('now')}
+            onClick={() => revealPath('now')}
           />
           <PathCard
             title={tr('держать 2·3·4 → стрейт', 'keep 2·3·4 → straight')}
             value="≈ 17"
             sub={tr('≈0,56 на малый стрейт 30 за переброс, и их два', '≈0.56 for a small straight 30 per reroll, and there are two')}
-            on={path === 'reroll'}
-            onClick={() => { setPath('reroll'); satisfyGate?.() }}
+            hint={cardHint}
+            revealed={isRevealed('reroll')}
+            onClick={() => revealPath('reroll')}
           />
         </div>
       )}

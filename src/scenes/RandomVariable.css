@@ -52,6 +52,12 @@
   font-weight: 600;
 }
 
+/* Unrevealed score: a faint placeholder that invites the tap. */
+.rv-row-score--hidden {
+  opacity: 0.3;
+  font-weight: 400;
+}
+
 .rv-paths {
   display: flex;
   gap: 1rem;
@@ -76,6 +82,15 @@
 .rv-path--on {
   border-color: var(--accent);
   background: var(--accent-bg);
+}
+
+/* Unrevealed path: a dashed, dimmed card whose big "?" invites the tap. */
+.rv-path--hidden {
+  border-style: dashed;
+}
+.rv-path--hidden .rv-path-value {
+  color: var(--text-muted);
+  opacity: 0.5;
 }
 
 .rv-path-title {
