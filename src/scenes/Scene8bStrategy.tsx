@@ -181,7 +181,11 @@ export function StrategyModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const [pick, setPick] = useState<string>('yahtzee')
   const [perTurn, setPerTurn] = useState<Record<string, number> | null>(null)
   const [busyA, setBusyA] = useState(false)
-  const [sorted, setSorted] = useState(false)
+  // STR.A3 — the reader sorts the combos themselves (drag to reorder), then
+  // reveals the true over-a-turn ranking and sees how many they placed right.
+  const [order, setOrder] = useState<string[]>(['four', 'yahtzee', 'three', 'large', 'small', 'full'])
+  const [a3Revealed, setA3Revealed] = useState(false)
+  const [dragKey, setDragKey] = useState<string | null>(null)
 
   // Part B
   const [assigned, setAssigned] = useState<number | null>(null)
@@ -273,38 +277,86 @@ export function StrategyModel({ activeBeatId, satisfyGate }: SceneModelProps) {
     )
   }
 
-  // STR.A3 — difficulty ladder, sorted by over-a-turn odds
+  // STR.A3 — the reader drags the combos into their own difficulty order, then
+  // reveals the true over-a-turn ranking and how many they placed right.
   if (beat === 'STR.A3') {
     const rates = perTurn ?? Object.fromEntries(COMBOS.map((c) => [c.key, c.single]))
-    const ladder = [...COMBOS]
-    if (sorted) ladder.sort((a, b) => (rates[b.key] ?? 0) - (rates[a.key] ?? 0))
+    const byKey: Record<string, Combo> = Object.fromEntries(COMBOS.map((c) => [c.key, c]))
+    const correct = [...COMBOS]
+      .sort((a, b) => (rates[b.key] ?? 0) - (rates[a.key] ?? 0))
+      .map((c) => c.key)
+    const rightCount = a3Revealed ? order.filter((k, i) => correct[i] === k).length : 0
+
+    const onDrop = (targetKey: string) => {
+      setOrder((prev) => {
+        if (dragKey === null || dragKey === targetKey) return prev
+        const arr = prev.filter((k) => k !== dragKey)
+        arr.splice(arr.indexOf(targetKey), 0, dragKey)
+        return arr
+      })
+      setDragKey(null)
+    }
+
     return (
       <div className="strat-model">
-        <button
-          className="strat-btn"
-          onClick={() => {
-            if (!perTurn) runPerTurn()
-            setSorted(true)
-            satisfyGate?.()
-          }}
-        >
-          {tr('отсортировать по сложности', 'sort by difficulty')}
-        </button>
         <ol className="strat-ladder">
-          {ladder.map((c) => {
-            const r = rates[c.key] ?? c.single
+          {order.map((key, i) => {
+            const c = byKey[key]
+            const r = rates[key] ?? c.single
             const tier = r > 40 ? 'easy' : r > 10 ? 'mid' : 'hard'
+            const placedRight = a3Revealed && correct[i] === key
             return (
-              <li key={c.key} className={`strat-rung strat-rung--${tier}`}>
-                <span className="strat-bar-name">{tr(c.ru, c.en)}</span>
-                <span className="strat-rung-val">{r.toFixed(r < 10 ? 1 : 0)}%</span>
-                <span className="strat-rung-tag">
-                  {tier === 'easy' ? tr('попутно', 'incidental') : tier === 'mid' ? tr('середина', 'middling') : tr('дорого', 'costly')}
+              <li
+                key={key}
+                className={`strat-rung ${a3Revealed ? `strat-rung--${tier}` : ''} ${
+                  a3Revealed ? (placedRight ? 'strat-rung--right' : 'strat-rung--wrong') : 'strat-rung--draggable'
+                } ${dragKey === key ? 'strat-rung--dragging' : ''}`}
+                draggable={!a3Revealed}
+                onDragStart={() => setDragKey(key)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(key)}
+                onDragEnd={() => setDragKey(null)}
+              >
+                <span className="strat-bar-name">
+                  {!a3Revealed && <span className="strat-rung-grip" aria-hidden="true">⠿ </span>}
+                  {tr(c.ru, c.en)}
+                </span>
+                <span className="strat-rung-val">{a3Revealed ? `${r.toFixed(r < 10 ? 1 : 0)}%` : ''}</span>
+                <span className={`strat-rung-tag ${placedRight ? 'strat-rung-tag--ok' : ''}`}>
+                  {a3Revealed
+                    ? placedRight
+                      ? '✓'
+                      : tr(`верно №${correct.indexOf(key) + 1}`, `should be #${correct.indexOf(key) + 1}`)
+                    : tr('перетащи', 'drag')}
                 </span>
               </li>
             )
           })}
         </ol>
+        {!a3Revealed ? (
+          <>
+            <button
+              className="strat-btn"
+              onClick={() => {
+                if (!perTurn) runPerTurn()
+                setA3Revealed(true)
+                satisfyGate?.()
+              }}
+            >
+              {tr('проверить порядок', 'check my order')}
+            </button>
+            <p className="strat-note">
+              {tr('перетаскивай: сверху — что собрать легче за ход', 'drag to sort: easiest-over-a-turn on top')}
+            </p>
+          </>
+        ) : (
+          <p className="strat-note">
+            {tr(
+              `верно расставлено ${rightCount} из 6 · сверху — что собрать легче за ход`,
+              `${rightCount} of 6 in the right place · top = easiest to make over a turn`
+            )}
+          </p>
+        )}
       </div>
     )
   }

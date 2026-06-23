@@ -152,6 +152,31 @@
   color: var(--text-muted);
   text-align: right;
 }
+.strat-rung-tag--ok {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* STR.A3 manual sort: draggable rungs + reveal feedback */
+.strat-rung--draggable {
+  cursor: grab;
+}
+.strat-rung--draggable:active {
+  cursor: grabbing;
+}
+.strat-rung--dragging {
+  opacity: 0.45;
+}
+.strat-rung-grip {
+  color: var(--text-muted);
+  cursor: grab;
+}
+.strat-rung--right {
+  background: var(--accent-bg);
+}
+.strat-rung--wrong {
+  background: color-mix(in srgb, #ef4444 8%, var(--panel-bg));
+}
 
 /* ---- B hand + rows ---- */
 .strat-hand {
