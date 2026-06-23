@@ -43,9 +43,14 @@ export const UI = {
 export const GATE_CUE: Record<GateKind, Bilingual> = {
   roll: { ru: 'бросьте, чтобы продолжить', en: 'roll to continue' },
   slider: { ru: 'потяните ползунок, чтобы продолжить', en: 'drag the slider to continue' },
-  choice: { ru: 'выберите, чтобы продолжить', en: 'make a choice to continue' },
+  select: { ru: 'выделите, чтобы продолжить', en: 'select to continue' },
+  pick: { ru: 'выберите путь, чтобы продолжить', en: 'pick one to continue' },
+  place: { ru: 'разложите, чтобы продолжить', en: 'place them to continue' },
+  build: { ru: 'соберите, чтобы продолжить', en: 'build it up to continue' },
   hold: { ru: 'удержите кубик, чтобы продолжить', en: 'hold a die to continue' },
   toggle: { ru: 'переключите, чтобы продолжить', en: 'flip the switch to continue' },
+  step: { ru: 'сделайте шаг, чтобы продолжить', en: 'take the step to continue' },
+  choice: { ru: 'выберите, чтобы продолжить', en: 'make a choice to continue' },
 }
 
 /** Menu labels by scene id (RU mirrors the labels set in App.tsx). */

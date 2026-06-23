@@ -16,7 +16,29 @@ export interface SceneModelProps {
 
 /* ---- beats ---- */
 
-export type GateKind = 'roll' | 'slider' | 'choice' | 'hold' | 'toggle'
+// Each kind names the *kind of thought* the manipulation embodies, so the beat
+// cue can match the action:
+//   roll   — throw / sample (frequency, randomness)
+//   slider — pull a number or scale (a law of large numbers, N, a size)
+//   select — mark out a subset (an event, which 5 of 10)
+//   pick   — choose between competing alternatives (which hold, which path)
+//   place  — drag / lay things out (stars into boxes)
+//   build  — assemble or order a thing one piece at a time (add a die, a row)
+//   hold   — keep dice across a reroll
+//   toggle — flip between two worlds (independent/dependent, mean/win)
+//   step   — perform one deductive step (collapse a count, run the count)
+//   choice — a genuinely open either/or decision (kept rare on purpose)
+export type GateKind =
+  | 'roll'
+  | 'slider'
+  | 'select'
+  | 'pick'
+  | 'place'
+  | 'build'
+  | 'hold'
+  | 'toggle'
+  | 'step'
+  | 'choice'
 
 export interface GateSpec {
   kind: GateKind
