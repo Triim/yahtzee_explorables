@@ -525,8 +525,11 @@ export function StrategyModel({ activeBeatId, satisfyGate }: SceneModelProps) {
               return (
                 <g key={r.key} opacity={dim ? 0.22 : 1}>
                   <circle cx={px(s.mean)} cy={py(s.stdDev)} r={big ? 12 : 8} fill={r.color} className="strat-pt" />
-                  {(big || !focusKey) && (
-                    <text x={px(s.mean)} y={py(s.stdDev) - (big ? 16 : 12)} className="strat-pt-label" textAnchor="middle">
+                  {/* Label only the focused point (C1–C5); on the overview the
+                      points cluster and their labels collide, so the colored
+                      legend below carries the names instead. */}
+                  {big && (
+                    <text x={px(s.mean)} y={py(s.stdDev) - 16} className="strat-pt-label" textAnchor="middle">
                       {tr(r.ru, r.en)}
                     </text>
                   )}
