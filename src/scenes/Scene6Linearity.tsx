@@ -140,7 +140,7 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   const tr = useTr()
   const [added, setAdded] = useState(false)
   const [greedyAvg, setGreedyAvg] = useState<number | null>(null)
-  const [upper, setUpper] = useState<62 | 63 | null>(null)
+  const [upperScore, setUpperScore] = useState(62) // B6.3: starts right at the cliff edge
   const [dumped, setDumped] = useState(false)
   const [game, setGame] = useState<TurnLog[] | null>(null)
 
@@ -252,18 +252,61 @@ export function LinearityModel({ activeBeatId, satisfyGate }: SceneModelProps) {
   }
 
   if (beat === 'B6.3') {
+    // A slider over the upper score, drawn against the *total* it yields. The
+    // bonus is a step: total tracks the upper 1-for-1 until 63, where it leaps
+    // +35 — drag across the edge and the cliff is something you feel.
+    const LO = 54
+    const HI = 70
+    const bonus = upperScore >= 63 ? 35 : 0
+    const totalWith = upperScore + bonus
+    const W = 300
+    const H = 150
+    const padL = 18
+    const padR = 12
+    const padT = 12
+    const padB = 26
+    const yMax = HI + 35
+    const px = (u: number) => padL + ((u - LO) / (HI - LO)) * (W - padL - padR)
+    const py = (y: number) => H - padB - ((y - LO) / (yMax - LO)) * (H - padT - padB)
+    const left: string[] = []
+    for (let u = LO; u <= 62; u++) left.push(`${px(u)},${py(u)}`)
+    const right: string[] = []
+    for (let u = 63; u <= HI; u++) right.push(`${px(u)},${py(u + 35)}`)
     return (
       <div className="lin-model">
         <div className="lin-bonus">
-          <div className="lin-bonus-num">{upper ?? '—'}</div>
-          <div className={`lin-bonus-tag ${upper === 63 ? 'lin-bonus-tag--on' : ''}`}>
-            {tr('бонус', 'bonus')} {upper === 63 ? '+35' : '0'}
+          <div className="lin-bonus-num">{totalWith}</div>
+          <div className={`lin-bonus-tag ${bonus ? 'lin-bonus-tag--on' : ''}`}>
+            {tr('бонус', 'bonus')} {bonus ? '+35' : '0'}
           </div>
         </div>
-        <div className="lin-bonus-btns">
-          <button className="lin-btn" onClick={() => { setUpper(62); satisfyGate?.() }}>{tr('верх = 62', 'upper = 62')}</button>
-          <button className="lin-btn" onClick={() => { setUpper(63); satisfyGate?.() }}>{tr('верх = 63', 'upper = 63')}</button>
-        </div>
+        <svg width={W} height={H} className="lin-step" role="img">
+          <line x1={px(63)} y1={padT} x2={px(63)} y2={H - padB} className="lin-step-thresh" />
+          <text x={px(63)} y={H - 8} textAnchor="middle" className="lin-step-axis">63</text>
+          <polyline points={left.join(' ')} className="lin-step-line" fill="none" />
+          <polyline points={right.join(' ')} className="lin-step-line" fill="none" />
+          <line x1={px(63)} y1={py(62)} x2={px(63)} y2={py(98)} className="lin-step-jump" />
+          <circle cx={px(upperScore)} cy={py(totalWith)} r={5} className="lin-step-dot" />
+        </svg>
+        <input
+          type="range"
+          min={LO}
+          max={HI}
+          value={upperScore}
+          onChange={(e) => {
+            const v = +e.target.value
+            setUpperScore(v)
+            if (v >= 63) satisfyGate?.()
+          }}
+          className="lin-step-range"
+        />
+        <p className="lin-note">
+          {tr(
+            `верх ${upperScore} → даёт ${totalWith} очков`,
+            `upper ${upperScore} → yields ${totalWith} points`
+          )}
+          {upperScore === 62 && tr(' · ещё одно очко — и сразу +35', ' · one more point — and +35 at once')}
+        </p>
         <p className="lin-note">
           {tr(
             'шестьдесят два — ноль; шестьдесят три — сразу +35. Это порог, не линейный вклад.',
@@ -341,7 +384,7 @@ export const scene6: Scene = {
         'Первая трещина — бонус. Помнишь порог 63 в верхней секции? За него дают +35, но только целиком, ступенькой. Подведи жадного к 62 и к 63.',
       payoff:
         'Шестьдесят два — ноль бонуса; шестьдесят три — сразу +35. Это не линейный вклад, а **порог**. Поэтому верхние строки связаны: записать «шестёрки» одной шестёркой локально не страшно, а в сумме это может стоить всех тридцати пяти очков.',
-      gate: { kind: 'toggle' },
+      gate: { kind: 'slider' },
     },
     {
       id: 'B6.4',

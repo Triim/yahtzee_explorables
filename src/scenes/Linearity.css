@@ -131,6 +131,39 @@
   gap: 0.8rem;
 }
 
+/* B6.3 — the bonus threshold drawn as a step (total vs upper, +35 cliff at 63). */
+.lin-step {
+  display: block;
+  margin: 0.2rem auto 0;
+}
+.lin-step-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.lin-step-jump {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+}
+.lin-step-thresh {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+.lin-step-axis {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--hand);
+}
+.lin-step-dot {
+  fill: var(--accent);
+}
+.lin-step-range {
+  width: 260px;
+  max-width: 90%;
+  accent-color: var(--accent);
+}
+
 .lin-note {
   margin: 0;
   font-size: 0.88rem;
