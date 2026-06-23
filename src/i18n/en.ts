@@ -402,7 +402,7 @@ export const BEATS_EN: Record<string, { prompt?: string; payoff?: string }> = {
     prompt:
       'The game’s total is the sum of thirteen rows. And the average of a sum is simple: the average of a sum equals the sum of the averages.',
     payoff:
-      'This is the same linearity of expectation that averaged the sixes — only now for all thirteen rows at once. It always holds, even when the rows are linked:\n[[$E[\\sum X_i] = \\sum E[X_i]$]]\nFrom it a recipe suggests itself: fill each row to its maximum, and the total will be maximal.',
+      'This is the same linearity of expectation that averaged the sixes — only now for all thirteen rows at once. It always holds, even when the rows are linked:\n[[$E[\\sum X_i] = \\sum E[X_i]$]]\nThe bars themselves are what each row brings on average over a game under sensible play. The upper rows read easily: you aim for about three dice per face (the same logic as the 63 threshold), so sixes pull toward twenty while ones stay modest — around two. The lower rows are worth their face value times how often the hand actually gets there. From it a recipe suggests itself: fill each row to its maximum, and the total will be maximal.',
   },
   'B6.1W': {
     prompt:
